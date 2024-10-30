@@ -1,3 +1,6 @@
+import 'package:fitness_app/user/screens/forgotpassword.dart'; // Ensure this screen exists
+// Import CustomizeInterestsScreen
+import 'package:fitness_app/user/screens/mainpage.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -139,15 +142,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   IconButton(
                     icon: Icon(Icons.alternate_email), // Twitter icon replacement
-                    onPressed: () {},
+                    onPressed: () {
+                      // Add your Twitter sign-in logic here
+                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.facebook),
-                    onPressed: () {},
+                    onPressed: () {
+                      // Add your Facebook sign-in logic here
+                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.g_mobiledata), // Google icon replacement
-                    onPressed: () {},
+                    onPressed: () {
+                      // Add your Google sign-in logic here
+                    },
                   ),
                 ],
               ),
@@ -159,6 +168,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Logging in...')),
+                    );
+                    // Navigate to the next screen after successful login
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>  CustomizeInterestsScreen()),
                     );
                   }
                 },
