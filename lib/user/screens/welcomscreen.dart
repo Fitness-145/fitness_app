@@ -1,4 +1,5 @@
-import 'package:fitness_app/user/screens/loginscreen.dart';
+
+import 'package:fitness_app/user/screens/signuppage.dart';
 import 'package:flutter/material.dart';
 
 
@@ -46,7 +47,9 @@ class WelcomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                   Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen(),));
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
                   shape: RoundedRectangleBorder(
@@ -64,29 +67,7 @@ class WelcomeScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             // Sign In Link
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Already have an account? ",
-                  style: TextStyle(color: Colors.grey),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Handle Sign In tap
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
-                  },
-                  child: Text(
-                    "Sign in",
-                    style: TextStyle(
-                      color: Colors.purple,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 30),
+       
           ],
         ),
       ),
