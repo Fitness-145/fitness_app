@@ -81,83 +81,74 @@ class _SignupScreenState extends State<SignupScreen> {
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: Text('Sign Up'),
+        centerTitle: true,
+        backgroundColor: Colors.purple,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              SizedBox(height: 40),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                SizedBox(height: 40),
 
-              // Name TextField
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
+                // Welcome Text
+                Text(
+                  'Create Account',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Name TextField
+                _buildTextField(
+                  controller: _nameController,
+                  icon: Icons.person,
                   hintText: 'Full Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  validator: _validateName,
                 ),
-                validator: _validateName,
-              ),
-              SizedBox(height: 15),
+                SizedBox(height: 15),
 
-              // Email TextField
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.email),
+                // Email TextField
+                _buildTextField(
+                  controller: _emailController,
+                  icon: Icons.email,
                   hintText: 'Email Address',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  validator: _validateEmail,
                 ),
-                validator: _validateEmail,
-              ),
-              SizedBox(height: 15),
+                SizedBox(height: 15),
 
-              // Age TextField
-              TextFormField(
-                controller: _ageController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.cake),
+                // Age TextField
+                _buildTextField(
+                  controller: _ageController,
+                  icon: Icons.cake,
                   hintText: 'Age',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  keyboardType: TextInputType.number,
+                  validator: _validateAge,
                 ),
-                keyboardType: TextInputType.number,
-                validator: _validateAge,
-              ),
-              SizedBox(height: 15),
+                SizedBox(height: 15),
 
-              // Phone Number TextField
-              TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.phone),
+                // Phone Number TextField
+                _buildTextField(
+                  controller: _phoneController,
+                  icon: Icons.phone,
                   hintText: 'Phone Number',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: _validatePhone,
                 ),
-                keyboardType: TextInputType.phone,
-                validator: _validatePhone,
-              ),
-              SizedBox(height: 15),
+                SizedBox(height: 15),
 
-              // Password TextField with visibility toggle
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                // Password TextField with visibility toggle
+                _buildTextField(
+                  controller: _passwordController,
+                  icon: Icons.lock,
                   hintText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  obscureText: !_isPasswordVisible,
+                  validator: _validatePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -169,60 +160,89 @@ class _SignupScreenState extends State<SignupScreen> {
                     },
                   ),
                 ),
-                validator: _validatePassword,
-              ),
-              SizedBox(height: 30),
+                SizedBox(height: 30),
 
-              // Sign Up Button
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Signing up...')),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Sign Up',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              SizedBox(height: 20),
-
-              // Sign In Option
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Already have an account?'),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginScreen(), // Replace with your login screen
-                        ),
+                // Sign Up Button
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Signing up...')),
                       );
-                    },
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(color: Colors.purple),
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                ],
-              ),
-            ],
+                  child: Text(
+                    'Sign Up',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Sign In Option
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Already have an account?'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Sign In',
+                        style: TextStyle(color: Colors.purple),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  // Function to build a styled text field
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String hintText,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    FormFieldValidator<String>? validator,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.purple),
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.purple),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.purple, width: 2),
+        ),
+        suffixIcon: suffixIcon,
+      ),
+      validator: validator,
+    );
+  }
 }
-
-

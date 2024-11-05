@@ -1,5 +1,5 @@
 import 'package:fitness_app/user/screens/forgotpassword.dart'; // Ensure this screen exists
-// Import CustomizeInterestsScreen
+// Ensure this screen exists
 import 'package:fitness_app/user/screens/mainpage.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +12,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false; // Controls password visibility
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -67,45 +67,51 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo at the top
-              Icon(
-                Icons.bolt, // Use your preferred icon or image asset
-                color: Colors.purple,
-                size: 80,
-              ),
-              SizedBox(height: 40),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 40),
 
-              // Email TextField with validation
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
-                  hintText: 'Email Address',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                // Logo at the top
+                Icon(
+                  Icons.bolt,
+                  color: Colors.purple,
+                  size: 80,
+                ),
+                SizedBox(height: 20),
+
+                // Title Text
+                Text(
+                  'Welcome Back!',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
                   ),
                 ),
-                validator: _validateEmail,
-              ),
-              SizedBox(height: 15),
+                SizedBox(height: 10),
 
-              // Password TextField with validation and visibility toggle
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                // Email TextField with validation
+                _buildTextField(
+                  controller: _emailController,
+                  icon: Icons.person,
+                  hintText: 'Email Address',
+                  validator: _validateEmail,
+                ),
+                SizedBox(height: 20),
+
+                // Password TextField with validation and visibility toggle
+                _buildTextField(
+                  controller: _passwordController,
+                  icon: Icons.lock,
                   hintText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  obscureText: !_isPasswordVisible,
+                  validator: _validatePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -117,81 +123,115 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                 ),
-                validator: _validatePassword,
-              ),
-              SizedBox(height: 10),
+                SizedBox(height: 10),
 
-              // Forgot Password button
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _forgotPassword,
+                // Forgot Password button
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _forgotPassword,
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: Colors.purple),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Social media sign-in buttons
+                Text(
+                  'Sign in with',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.alternate_email), // Twitter icon replacement
+                      onPressed: () {
+                        // Add your Twitter sign-in logic here
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.facebook),
+                      onPressed: () {
+                        // Add your Facebook sign-in logic here
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.g_mobiledata), // Google icon replacement
+                      onPressed: () {
+                        // Add your Google sign-in logic here
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+
+                // Continue button
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Logging in...')),
+                      );
+                      // Navigate to the next screen after successful login
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) =>CustomizeInterestsScreen()),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    padding: EdgeInsets.symmetric(horizontal: 120, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    minimumSize: Size(200, 50),
+                  ),
                   child: Text(
-                    'Forgot Password?',
-                    style: TextStyle(color: Colors.purple),
+                    'Continue',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
-              ),
-              SizedBox(height: 10),
-
-              // Social media sign-in buttons
-              Text('Sign in with'),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.alternate_email), // Twitter icon replacement
-                    onPressed: () {
-                      // Add your Twitter sign-in logic here
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.facebook),
-                    onPressed: () {
-                      // Add your Facebook sign-in logic here
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.g_mobiledata), // Google icon replacement
-                    onPressed: () {
-                      // Add your Google sign-in logic here
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-
-              // Continue button
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Logging in...')),
-                    );
-                    // Navigate to the next screen after successful login
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) =>  CustomizeInterestsScreen()),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Continue',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+                SizedBox(height: 40), // Space below the button
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  // Function to build a styled text field
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String hintText,
+    bool obscureText = false,
+    FormFieldValidator<String>? validator,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.purple),
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.purple),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.purple, width: 2),
+        ),
+        suffixIcon: suffixIcon,
+      ),
+      validator: validator,
     );
   }
 }
