@@ -5,10 +5,13 @@ class CustomizeInterestsScreen extends StatefulWidget {
   const CustomizeInterestsScreen({super.key});
 
   @override
-  _CustomizeInterestsScreenState createState() => _CustomizeInterestsScreenState();
+  _CustomizeInterestsScreenState createState() =>
+      _CustomizeInterestsScreenState();
 }
 
 class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
+  int _currentIndex = 0; // Track the selected bottom navigation item
+
   // Track selected interests
   final List<Map<String, dynamic>> interests = [
     {'interest': 'Gym', 'icon': Icons.fitness_center, 'selected': false},
@@ -76,7 +79,8 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
                         Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isSelected ? Colors.purple[100] : Colors.white,
+                            color:
+                                isSelected ? Colors.purple[100] : Colors.white,
                             border: Border.all(
                               color: isSelected ? Colors.purple : Colors.grey,
                               width: 2,
@@ -90,7 +94,8 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
                           ),
                         ),
                         const SizedBox(height: 5),
-                        Text(interest['interest'], style: const TextStyle(fontSize: 14)),
+                        Text(interest['interest'],
+                            style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   );
@@ -110,24 +115,53 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CategorySelectionScreen(selectedInterests: selectedInterests,),
+                    builder: (context) => CategorySelectionScreen(
+                      selectedInterests: selectedInterests,
+                    ),
                   ),
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,
-                padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text('Continue', style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('Continue', style: TextStyle(color: Colors.white)),
             ),
-            
-            
+
             const SizedBox(height: 20),
           ],
         ),
+      ),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        selectedItemColor: Colors.purple,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'My Plan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.run_circle),
+            label: 'Activities',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

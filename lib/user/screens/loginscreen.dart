@@ -1,4 +1,4 @@
-import 'package:fitness_app/user/screens/forgotpassword.dart'; // Ensure this screen exists
+// Ensure this screen exists
 import 'package:fitness_app/user/screens/mainpage.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
 import 'package:flutter/material.dart';
@@ -150,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Navigate to the next screen after successful login
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CustomizeInterestsScreen()),
+                        MaterialPageRoute(builder: (context) => const CustomizeInterestsScreen()),
                       );
                     }
                   },

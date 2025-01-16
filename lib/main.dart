@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 
 void main() {
-  runApp(FitnessApp());
+  runApp(const FitnessApp());
 }
 
 class FitnessApp extends StatelessWidget {
@@ -11,7 +11,7 @@ class FitnessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: WelcomeScreen(),
     );
   }
