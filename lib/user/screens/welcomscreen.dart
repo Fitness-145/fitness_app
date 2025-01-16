@@ -1,27 +1,28 @@
-
+import 'package:fitness_app/user/screens/loginscreen.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
 import 'package:flutter/material.dart';
 
-
 class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF6F7FB),
+      backgroundColor: const Color(0xFFF6F7FB),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Spacer(),
+            const Spacer(),
             // Logo
-            Icon(
+            const Icon(
               Icons.fitness_center,
               color: Colors.purple,
               size: 80,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Welcome Text
-            Text(
+            const Text(
               "Welcome to your Fitness ",
               style: TextStyle(
                 fontSize: 24,
@@ -30,8 +31,8 @@ class WelcomeScreen extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 10),
-            Text(
+            const SizedBox(height: 10),
+            const Text(
               "The best UI Kit for your next health\nand fitness project!",
               style: TextStyle(
                 fontSize: 16,
@@ -39,25 +40,29 @@ class WelcomeScreen extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             // Illustration Image (replace with actual image asset)
-           
-            Spacer(),
+
+            const Spacer(),
             // Get Started Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: ElevatedButton(
                 onPressed: () {
-                   Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen(),));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>LoginScreen(),
+                      ));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 15),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Get Started",
                     style: TextStyle(fontSize: 18, color: Colors.white),
@@ -65,9 +70,8 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Sign In Link
-       
           ],
         ),
       ),

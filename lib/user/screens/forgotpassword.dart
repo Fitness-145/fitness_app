@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
+  const ResetPasswordScreen({super.key});
+
   @override
   _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
 }
@@ -45,7 +47,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reset Password'),
+        title: const Text('Reset Password'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -54,19 +56,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 'Enter your new password',
                 style: TextStyle(fontSize: 18),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // New Password TextField
               TextFormField(
                 controller: _newPasswordController,
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   hintText: 'New Password',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -84,14 +86,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ),
                 validator: _validatePassword,
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
 
               // Confirm Password TextField
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   hintText: 'Confirm Password',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -109,7 +111,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ),
                 validator: _validateConfirmPassword,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Reset Password Button
               ElevatedButton(
@@ -117,18 +119,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   if (_formKey.currentState!.validate()) {
                     // This is where you would call your password reset API
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Password has been reset successfully')),
+                      const SnackBar(content: Text('Password has been reset successfully')),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
-                  padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: Text('Reset Password', style: TextStyle(color: Colors.white)),
+                child: const Text('Reset Password', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),

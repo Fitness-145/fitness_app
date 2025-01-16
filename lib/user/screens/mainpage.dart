@@ -1,20 +1,23 @@
+import 'package:fitness_app/user/screens/category_screen.dart';
 import 'package:flutter/material.dart';
 
 class CustomizeInterestsScreen extends StatefulWidget {
+  const CustomizeInterestsScreen({super.key});
+
   @override
   _CustomizeInterestsScreenState createState() => _CustomizeInterestsScreenState();
 }
 
 class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
   // Track selected interests
-  final Map<String, bool> interests = {
-    'Gym': false,
-    'Karate': false,
-    'Martial Arts': false,
-    'Badminton': false,
-    'Shooting': false,
-    'Boxing': false,
-  };
+  final List<Map<String, dynamic>> interests = [
+    {'interest': 'Gym', 'icon': Icons.fitness_center, 'selected': false},
+    {'interest': 'Karate', 'icon': Icons.sports_kabaddi, 'selected': false},
+    {'interest': 'Martial Arts', 'icon': Icons.sports_mma, 'selected': false},
+    {'interest': 'Badminton', 'icon': Icons.sports_tennis, 'selected': false},
+    {'interest': 'Shooting', 'icon': Icons.sports_esports, 'selected': false},
+    {'interest': 'Boxing', 'icon': Icons.sports_mma, 'selected': false},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -36,36 +39,36 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
             LinearProgressIndicator(
               value: 0.5,
               backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Title
-            Text(
+            const Text(
               'Time to customize your interests',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Interest options
             Expanded(
               child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   childAspectRatio: .9,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
                 ),
-                itemCount: interests.keys.length,
+                itemCount: interests.length,
                 itemBuilder: (context, index) {
-                  String interest = interests.keys.elementAt(index);
-                  bool isSelected = interests[interest] ?? false;
+                  final interest = interests[index];
+                  bool isSelected = interest['selected'];
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        interests[interest] = !isSelected;
+                        interest['selected'] = !isSelected;
                       });
                     },
                     child: Column(
@@ -79,15 +82,15 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
                               width: 2,
                             ),
                           ),
-                          padding: EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(20),
                           child: Icon(
-                            _getInterestIcon(interest),
+                            interest['icon'],
                             color: isSelected ? Colors.purple : Colors.grey,
                             size: 40,
                           ),
                         ),
-                        SizedBox(height: 5),
-                        Text(interest, style: TextStyle(fontSize: 14)),
+                        const SizedBox(height: 5),
+                        Text(interest['interest'], style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   );
@@ -96,48 +99,36 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
             ),
 
             // Continue button
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Handle continue action
-                List<String> selectedInterests = interests.entries
-                    .where((entry) => entry.value)
-                    .map((entry) => entry.key)
+                // Create a list of selected interests as a list of maps
+                List<Map<String, dynamic>> selectedInterests = interests
+                    .where((interest) => interest['selected'])
                     .toList();
-                print("Selected interests: $selectedInterests");
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CategorySelectionScreen(selectedInterests: selectedInterests,),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,
-                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: Text('Continue', style: TextStyle(color: Colors.white)),
+              child: const Text('Continue', style: TextStyle(color: Colors.white)),
             ),
-            SizedBox(height: 20),
+            
+            
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
-  }
-
-  IconData _getInterestIcon(String interest) {
-    switch (interest) {
-      case 'Gym':
-        return Icons.fitness_center;
-      case 'Karate':
-        return Icons.sports_kabaddi;
-      case 'Martial Arts':
-        return Icons.sports_mma;
-      case 'Badminton':
-        return Icons.sports_tennis;
-      case 'Shooting':
-        return Icons.sports_esports; // Adjust icon if you prefer a different one
-      case 'Boxing':
-        return Icons.sports_mma;
-      default:
-        return Icons.help_outline;
-    }
   }
 }
