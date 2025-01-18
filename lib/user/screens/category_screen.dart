@@ -183,7 +183,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
               });
             },
           );
-        }).toList(),
+        }),
         const SizedBox(height: 20),
         const Text(
           "Select Time Slot",
@@ -200,7 +200,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
               });
             },
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -223,7 +223,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             "$category - $subcategory, Time: $timeSlot, Fee: ₹$fee",
             style: const TextStyle(fontSize: 16),
           );
-        }).toList(),
+        }),
         const SizedBox(height: 10),
         Text(
           "Total Fee: ₹$totalFee",
