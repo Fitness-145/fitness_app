@@ -1,3 +1,4 @@
+import 'package:fitness_app/user/screens/payment_screen.dart';
 import 'package:flutter/material.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
@@ -231,6 +232,30 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.green,
+          ),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PaymentScreen(
+                  summaryDetails: selectedSubcategories,
+                  totalFee: totalFee,
+                ),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.purple,
+            padding: const EdgeInsets.symmetric(vertical: 15.0),
+          ),
+          child: const Center(
+            child: Text(
+              "Continue to Payment",
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
           ),
         ),
       ],
