@@ -115,10 +115,10 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 20,
-        childAspectRatio: 0.9,
+        crossAxisCount: 2, // Two boxes per row
+        mainAxisSpacing: 10, // Adjusted spacing
+        crossAxisSpacing: 10, // Adjusted spacing
+        childAspectRatio: 1.5, // Reduced the box size
       ),
       itemCount: widget.selectedInterests.length,
       itemBuilder: (context, index) {
@@ -132,6 +132,10 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           },
           child: Card(
             color: selectedCategoryIndex == index ? Colors.purple : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            elevation: 4,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -141,8 +145,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                     color: selectedCategoryIndex == index
                         ? Colors.white
                         : Colors.black,
+                    size: selectedCategoryIndex == index ? 30 : 18, // Reduced icon size
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Text(
                     interest['interest'],
                     style: TextStyle(
@@ -150,6 +155,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                           ? Colors.white
                           : Colors.black,
                       fontWeight: FontWeight.bold,
+                      fontSize: selectedCategoryIndex == index ? 13 : 11, // Reduced font size
                     ),
                   ),
                 ],
@@ -215,16 +221,21 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        ...selectedSubcategories.entries.map((entry) {
-          final category = entry.key;
-          final subcategory = entry.value ?? '';
-          final timeSlot = selectedTimes[category] ?? 'Not selected';
-          final fee = subcategoryFees[category] ?? 0;
-          return Text(
-            "$category - $subcategory, Time: $timeSlot, Fee: ₹$fee",
-            style: const TextStyle(fontSize: 16),
-          );
-        }),
+        // Removed the container box design, using simple Column
+        Column(
+          children: [
+            ...selectedSubcategories.entries.map((entry) {
+              final category = entry.key;
+              final subcategory = entry.value ?? '';
+              final timeSlot = selectedTimes[category] ?? 'Not selected';
+              final fee = subcategoryFees[category] ?? 0;
+              return Text(
+                "$category - $subcategory, Time: $timeSlot, Fee: ₹$fee",
+                style: const TextStyle(fontSize: 16),
+              );
+            }),
+          ],
+        ),
         const SizedBox(height: 10),
         Text(
           "Total Fee: ₹$totalFee",
