@@ -1,4 +1,5 @@
 import 'package:fitness_app/user/screens/category_screen.dart';
+import 'package:fitness_app/user/screens/profilescreen.dart';
 import 'package:flutter/material.dart';
 
 class CustomizeInterestsScreen extends StatefulWidget {
@@ -21,6 +22,22 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
     {'interest': 'Shooting', 'icon': Icons.sports_esports, 'selected': false},
     {'interest': 'Boxing', 'icon': Icons.sports_mma, 'selected': false},
   ];
+
+  void _onBottomNavTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
+    if (index == 2) {
+      // Navigate to the ProfilePictureScreen when the Profile icon is tapped
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ProfilePictureScreen(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,11 +158,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
       // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _onBottomNavTapped,
         selectedItemColor: Colors.purple,
         unselectedItemColor: Colors.grey,
         items: const [
