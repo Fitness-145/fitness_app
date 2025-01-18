@@ -1,5 +1,5 @@
 // Ensure this screen exists
-import 'package:fitness_app/user/screens/mainpage.dart';
+import 'package:fitness_app/user/screens/category.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
 import 'package:flutter/material.dart';
 
