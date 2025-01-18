@@ -1,4 +1,7 @@
+import 'package:fitness_app/user/screens/cardpayment.dart';
 import 'package:flutter/material.dart';
+import 'upi.dart'; // Ensure the correct import for UpiPaymentScreen
+// Assuming you have this file for CardPaymentScreen
 
 class PaymentScreen extends StatefulWidget {
   final Map<String, String?> summaryDetails;
@@ -15,7 +18,7 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  String? _selectedPaymentMethod = "card"; // State variable for selected payment method
+  String? _selectedPaymentMethod = "upi"; // Default to UPI as the first option
 
   @override
   Widget build(BuildContext context) {
@@ -58,8 +61,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Column(
               children: [
                 RadioListTile<String>(
-                  title: const Text("Credit/Debit Card"),
-                  value: "card",
+                  title: const Text("UPI"),
+                  value: "upi",
                   groupValue: _selectedPaymentMethod,
                   onChanged: (value) {
                     setState(() {
@@ -68,8 +71,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   },
                 ),
                 RadioListTile<String>(
-                  title: const Text("UPI"),
-                  value: "upi",
+                  title: const Text("Credit/Debit Card"),
+                  value: "card",
                   groupValue: _selectedPaymentMethod,
                   onChanged: (value) {
                     setState(() {
@@ -92,15 +95,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const Spacer(),
             ElevatedButton(
               onPressed: () {
-                // Add payment processing logic here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        "Payment Successful via ${_selectedPaymentMethod ?? "N/A"}!"),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                Navigator.pop(context); // Navigate back to the previous screen
+                if (_selectedPaymentMethod == "upi") {
+                  // Navigate to UPI Payment Screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UpiPaymentScreen(
+                        amount: widget.totalFee, // Pass the total fee as the amount
+                      ),
+                    ),
+                  );
+                } else if (_selectedPaymentMethod == "card") {
+                  // Navigate to Card Payment Screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CardPaymentScreen(
+                        totalFee: widget.totalFee, // Pass the total fee to CardPaymentScreen
+                      ),
+                    ),
+                  );
+                } else {
+                  // For other payment methods (Net Banking)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          "Payment Successful via ${_selectedPaymentMethod ?? "N/A"}!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  Navigator.pop(context); // Navigate back to the previous screen
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,

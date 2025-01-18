@@ -124,16 +124,17 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Create a list of selected interests as a list of maps
-                List<Map<String, dynamic>> selectedInterests = interests
+                // Create a list of selected interests as a list of strings
+                List<String> selectedInterests = interests
                     .where((interest) => interest['selected'])
+                    .map((interest) => interest['interest'] as String) // Extract 'interest' field
                     .toList();
 
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CategorySelectionScreen(
-                      selectedInterests: selectedInterests,
+                      selectedInterests: selectedInterests, // Pass the list of selected interests (List<String>)
                     ),
                   ),
                 );
