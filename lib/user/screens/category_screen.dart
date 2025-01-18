@@ -11,15 +11,13 @@ class CategorySelectionScreen extends StatefulWidget {
 }
 
 class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
-  int? selectedCategoryIndex; // Track the selected category
-  String? selectedCategory; // Name of the selected category
-  Map<String, String?> selectedSubcategories = {}; // Track subcategory selections
+  int? selectedCategoryIndex;
+  String? selectedCategory;
+  Map<String, String?> selectedSubcategories = {}; // Track selected subcategory per category
   Map<String, int> subcategoryFees = {}; // Track fees for selected subcategories
-  String? selectedBatch; // Track selected batch
-  String? selectedTime; // Track selected time
-  int _tabIndex = 0; // Manage selected bottom bar index
+  Map<String, String?> selectedTimes = {}; // Track selected time slot per category
+  int _tabIndex = 0;
 
-  // Map of categories and their subcategories
   final Map<String, List<String>> subcategories = {
     'Gym': ['Weight Loss', 'Weight Gain', 'Overall Fitness'],
     'Karate': ['Beginner', 'Amateur', 'Mature', 'Pro'],
@@ -29,7 +27,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     'Badminton': ['Singles', 'Doubles', 'Mixed Doubles'],
   };
 
-  // Fee details for subcategories
   final Map<String, int> subcategoryFeesData = {
     'Weight Loss': 1500,
     'Weight Gain': 1800,
@@ -48,15 +45,14 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     'Mixed Doubles': 1800,
   };
 
-  // Total fee calculation
+  final List<String> timeSlots = ['7 AM - 9 AM', '4 PM - 9 PM'];
+
   int get totalFee => subcategoryFees.values.fold(0, (sum, fee) => sum + fee);
 
-  // Method to handle bottom navigation taps
   void _onTabTapped(int index) {
     setState(() {
       _tabIndex = index;
     });
-    // Add navigation logic here if needed
   }
 
   @override
@@ -82,9 +78,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                 const SizedBox(height: 20),
                 _buildCategoryGrid(),
                 const SizedBox(height: 20),
-                if (selectedCategory != null) _buildSubcategoryList(),
+                if (selectedCategory != null) _buildSubcategoryAndTimeSelection(),
                 const SizedBox(height: 20),
-                if (subcategoryFees.isNotEmpty) _buildTotalFeeSection(),
+                if (selectedSubcategories.isNotEmpty) _buildSummarySection(),
               ],
             ),
           ),
@@ -113,7 +109,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     );
   }
 
-  // Build the category grid
   Widget _buildCategoryGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -132,8 +127,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             setState(() {
               selectedCategoryIndex = index;
               selectedCategory = interest['interest'];
-              selectedSubcategories.clear();
-              subcategoryFees.clear();
             });
           },
           child: Card(
@@ -167,49 +160,52 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     );
   }
 
-  // Build the subcategory list
-  Widget _buildSubcategoryList() {
+  Widget _buildSubcategoryAndTimeSelection() {
     final subcategoryList = subcategories[selectedCategory] ?? [];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Subcategories for $selectedCategory",
+          "Subcategories and Time Slot for $selectedCategory",
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: subcategoryList.length,
-          itemBuilder: (context, index) {
-            final subcategory = subcategoryList[index];
-            final fee = subcategoryFeesData[subcategory] ?? 0;
-            final isSelected = selectedSubcategories.containsKey(subcategory);
-
-            return CheckboxListTile(
-              title: Text("$subcategory (₹$fee)"),
-              value: isSelected,
-              onChanged: (value) {
-                setState(() {
-                  if (value == true) {
-                    selectedSubcategories[subcategory] = subcategory;
-                    subcategoryFees[subcategory] = fee;
-                  } else {
-                    selectedSubcategories.remove(subcategory);
-                    subcategoryFees.remove(subcategory);
-                  }
-                });
-              },
-            );
-          },
+        ...subcategoryList.map((subcategory) {
+          final fee = subcategoryFeesData[subcategory] ?? 0;
+          return RadioListTile<String>(
+            title: Text("$subcategory (₹$fee)"),
+            value: subcategory,
+            groupValue: selectedSubcategories[selectedCategory],
+            onChanged: (value) {
+              setState(() {
+                selectedSubcategories[selectedCategory!] = value;
+                subcategoryFees[selectedCategory!] = fee;
+              });
+            },
+          );
+        }).toList(),
+        const SizedBox(height: 20),
+        const Text(
+          "Select Time Slot",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
+        ...timeSlots.map((slot) {
+          return RadioListTile<String>(
+            title: Text(slot),
+            value: slot,
+            groupValue: selectedTimes[selectedCategory],
+            onChanged: (value) {
+              setState(() {
+                selectedTimes[selectedCategory!] = value;
+              });
+            },
+          );
+        }).toList(),
       ],
     );
   }
 
-  // Build the total fee section
-  Widget _buildTotalFeeSection() {
+  Widget _buildSummarySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -218,8 +214,17 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        Text("Selected Subcategories: ${selectedSubcategories.keys.join(', ')}"),
-        const SizedBox(height: 5),
+        ...selectedSubcategories.entries.map((entry) {
+          final category = entry.key;
+          final subcategory = entry.value ?? '';
+          final timeSlot = selectedTimes[category] ?? 'Not selected';
+          final fee = subcategoryFees[category] ?? 0;
+          return Text(
+            "$category - $subcategory, Time: $timeSlot, Fee: ₹$fee",
+            style: const TextStyle(fontSize: 16),
+          );
+        }).toList(),
+        const SizedBox(height: 10),
         Text(
           "Total Fee: ₹$totalFee",
           style: const TextStyle(
