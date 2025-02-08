@@ -1,5 +1,8 @@
-import 'package:fitness_app/user/screens/paymet_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app/user/screens/myplan.dart';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
   const CategorySelectionScreen({super.key, required this.selectedInterests});
@@ -46,6 +49,98 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
   final List<String> timeSlots = ['7 AM - 9 AM', '4 PM - 9 PM'];
 
   int get totalFee => subcategoryFees.values.fold(0, (sum, fee) => sum + fee);
+
+  late Razorpay _razorpay;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    // Do something when payment succeeds
+    print("Payment Success: ${response.paymentId}");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Payment Success: ${response.paymentId}")),
+    );
+
+    // Add data to Firestore
+    try {
+      String userId = FirebaseAuth.instance.currentUser!
+          .uid; // Replace with the actual user ID (e.g., from Firebase Auth)
+      String paymentId = response.paymentId!;
+      String paymentStatus = "Success";
+      int totalFee = this.totalFee;
+
+      // Prepare the data to be added to Firestore
+      Map<String, dynamic> paymentData = {
+        'userId': userId,
+        'paymentId': paymentId,
+        'paymentStatus': paymentStatus,
+        'totalFee': totalFee,
+        'selectedSubcategories': selectedSubcategories,
+        'selectedTimes': selectedTimes,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+
+      // Add data to the 'my_plan' collection
+      await _firestore.collection('my_plan').add(paymentData);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PlanPage()),
+      );
+
+      print("Data added to Firestore successfully!");
+    } catch (e) {
+      print("Error adding data to Firestore: $e");
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    // Do something when payment fails
+    print("Payment Error: ${response.code} - ${response.message}");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Payment Error: ${response.message}")),
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    // Do something when an external wallet is selected
+    print("External Wallet: ${response.walletName}");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("External Wallet: ${response.walletName}")),
+    );
+  }
+
+  void _openRazorpayPayment() {
+    var options = {
+      'key': 'rzp_test_2vz3Qd309zM3YS', // Replace with your Razorpay key
+      'amount': totalFee * 100, // Amount in paise
+      'name': 'Fitness App',
+      'description': 'Payment for selected categories',
+      'prefill': {'contact': '1234567890', 'email': 'user@example.com'},
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,19 +315,12 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: selectedSubcategories.values.any((value) => value == null) ||
+          onPressed: selectedSubcategories.values
+                      .any((value) => value == null) ||
                   selectedTimes.values.any((value) => value == null)
               ? null // Disable button if subcategory or time slot is not selected
               : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PaymentScreen(
-                        summaryDetails: selectedSubcategories,
-                        totalFee: totalFee,
-                      ),
-                    ),
-                  );
+                  _openRazorpayPayment();
                 },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.purple,

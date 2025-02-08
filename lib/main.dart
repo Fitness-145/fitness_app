@@ -3,11 +3,11 @@ import 'package:fitness_app/firebase_options.dart';
 import 'package:fitness_app/user/screens/welcomscreen.dart';
 import 'package:flutter/material.dart';
 
-
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);
+  );
   runApp(const FitnessApp());
 }
 
@@ -21,4 +21,3 @@ class FitnessApp extends StatelessWidget {
     );
   }
 }
-

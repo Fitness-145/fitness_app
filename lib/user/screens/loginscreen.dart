@@ -1,7 +1,11 @@
-// Ensure this screen exists
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app/user/screens/TrainerDashboard.dart';
+import 'package:fitness_app/user/screens/sub_category_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/category.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
-import 'package:flutter/material.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +15,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -23,46 +29,54 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Email validation function
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your email';
-    }
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email';
-    }
-    return null;
-  }
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  // Password validation function
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your password';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters long';
-    }
-    return null;
-  }
+    try {
+      final userQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: _emailController.text.trim())
+          .limit(1)
+          .get();
 
-  // Function to handle "Forgot Password" action
-  void _forgotPassword() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Forgot Password'),
-        content: const Text('Password reset instructions will be sent to your email.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+      if (userQuery.docs.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not found. Please sign up.')),
+        );
+        return;
+      }
+
+      final userDoc = userQuery.docs.first;
+      final role = userDoc['role'];
+
+      // Authenticate only if role is valid
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Navigate based on role
+      if (role == 'admin') {
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const AdminDashboard()),
+        // );
+      } else if (role == 'trainer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const TrainerDashboard()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const CustomizeInterestsScreen()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   @override
@@ -78,127 +92,63 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-
-                // Logo at the top
-                const Icon(
-                  Icons.bolt,
-                  color: Colors.purple,
-                  size: 80,
-                ),
+                const Icon(Icons.bolt, color: Colors.purple, size: 80),
                 const SizedBox(height: 20),
-
-                // Title Text
                 const Text(
                   'Welcome Back!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.purple),
                 ),
                 const SizedBox(height: 10),
-
-                // Email TextField with validation
-                _buildTextField(
-                  controller: _emailController,
-                  icon: Icons.person,
-                  hintText: 'Email Address',
-                  validator: _validateEmail,
-                ),
+                _buildTextField(_emailController, Icons.person, 'Email Address', _validateEmail),
                 const SizedBox(height: 20),
-
-                // Password TextField with validation and visibility toggle
                 _buildTextField(
-                  controller: _passwordController,
-                  icon: Icons.lock,
-                  hintText: 'Password',
+                  _passwordController,
+                  Icons.lock,
+                  'Password',
+                  _validatePassword,
                   obscureText: !_isPasswordVisible,
-                  validator: _validatePassword,
                   suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
+                    icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // Forgot Password button
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: _forgotPassword,
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Colors.purple),
-                    ),
+                    child: const Text('Forgot Password?', style: TextStyle(color: Colors.purple)),
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Continue button
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Logging in...')),
-                      );
-                      // Navigate to the next screen after successful login
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CustomizeInterestsScreen()),
-                      );
-                    }
-                  },
+                  onPressed: _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     padding: const EdgeInsets.symmetric(horizontal: 120, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     minimumSize: const Size(200, 50),
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Text('Continue', style: TextStyle(color: Colors.white)),
                 ),
-                const SizedBox(height: 20), // Space after the "Continue" button
-
-                // "Don't have an account? Sign Up" text
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
+                    const Text("Don't have an account? ", style: TextStyle(fontSize: 16, color: Colors.black)),
                     GestureDetector(
-                      onTap: () {
-                        // Navigate to the Sign Up page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignupScreen(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignupScreen()),
+                      ),
                       child: const Text(
                         'Sign Up',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.purple,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.purple, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 40), // Space below the text
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -207,30 +157,39 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Function to build a styled text field
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required IconData icon,
-    required String hintText,
-    bool obscureText = false,
-    FormFieldValidator<String>? validator,
-    Widget? suffixIcon,
-  }) {
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Please enter your email';
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    return emailRegex.hasMatch(value) ? null : 'Enter a valid email';
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Please enter your password';
+    return value.length < 6 ? 'Password must be at least 6 characters' : null;
+  }
+
+  void _forgotPassword() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Forgot Password'),
+        content: const Text('Password reset instructions will be sent to your email.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, IconData icon, String hintText, FormFieldValidator<String>? validator, {bool obscureText = false, Widget? suffixIcon}) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.purple),
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.purple),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.purple, width: 2),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.purple, width: 2)),
         suffixIcon: suffixIcon,
       ),
       validator: validator,
