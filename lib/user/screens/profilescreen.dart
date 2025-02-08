@@ -156,10 +156,10 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
             // Profile Picture Section with Icon
             GestureDetector(
               onTap: changeProfilePic,  // Change profile pic when tapped
-              child: CircleAvatar(
+              child: const CircleAvatar(
                 radius: 60,
                 backgroundColor: Colors.purple,
-                child: const Icon(
+                child: Icon(
                   Icons.person,
                   size: 60,
                   color: Colors.white,
@@ -251,7 +251,7 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(height.toString() + ' cm'),
+                  child: Text('$height cm'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.purple),
@@ -267,7 +267,7 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(weight.toString() + ' kg'),
+                  child: Text('$weight kg'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.purple),

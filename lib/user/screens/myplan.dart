@@ -28,13 +28,13 @@ class PlanPage extends StatelessWidget {
             // Subcategory Description Section
             Text(
               'Category: $subcategoryName',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.purple,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               subcategoryDescription,
               style: TextStyle(
@@ -42,10 +42,10 @@ class PlanPage extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Workout Plan Section
-            Text(
+            const Text(
               'Workout Plan:',
               style: TextStyle(
                 fontSize: 22,
@@ -53,7 +53,7 @@ class PlanPage extends StatelessWidget {
                 color: Colors.purple,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
                 itemCount: workoutPlans.length,
@@ -91,7 +91,7 @@ class WorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -103,13 +103,13 @@ class WorkoutCard extends StatelessWidget {
           children: [
             Text(
               workoutPlan.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.purple,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               workoutPlan.description,
               style: TextStyle(
@@ -117,7 +117,7 @@ class WorkoutCard extends StatelessWidget {
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
