@@ -1,8 +1,10 @@
-import 'package:fitness_app/user/screens/loginscreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fitness_app/user/screens/loginscreen.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  const SignupScreen({Key? key}) : super(key: key);
 
   @override
   _SignupScreenState createState() => _SignupScreenState();
@@ -18,6 +20,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -31,76 +34,46 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  // Validation functions
-  String? _validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your name';
-    }
-    return null;
-  }
+  Future<void> _registerUser() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your email';
-    }
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email';
-    }
-    return null;
-  }
+    setState(() {
+      _isLoading = true;
+    });
 
-  String? _validateAge(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your age';
-    }
-    final age = int.tryParse(value);
-    if (age == null || age < 18) {
-      return 'Age must be 18 or above';
-    }
-    return null;
-  }
+    try {
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-  String? _validateHeight(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your height in cm';
-    }
-    final height = double.tryParse(value);
-    if (height == null || height <= 0) {
-      return 'Enter a valid height';
-    }
-    return null;
-  }
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'age': int.parse(_ageController.text.trim()),
+        'height': double.parse(_heightController.text.trim()),
+        'weight': double.parse(_weightController.text.trim()),
+        'phone': _phoneController.text.trim(),
+        'created_at': Timestamp.now(),
+      });
 
-  String? _validateWeight(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your weight in kg';
-    }
-    final weight = double.tryParse(value);
-    if (weight == null || weight <= 0) {
-      return 'Enter a valid weight';
-    }
-    return null;
-  }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration successful!')),
+      );
 
-  String? _validatePhone(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your phone number';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Registration failed')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    if (value.length != 10) {
-      return 'Phone number must be 10 digits';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your password';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
-    }
-    return null;
   }
 
   @override
@@ -120,19 +93,16 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 40),
-
-                // Welcome Text
                 const Text(
                   'Create Account',
                   style: TextStyle(
+                    
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.purple,
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Name TextField
                 _buildTextField(
                   controller: _nameController,
                   icon: Icons.person,
@@ -140,8 +110,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: _validateName,
                 ),
                 const SizedBox(height: 15),
-
-                // Email TextField
                 _buildTextField(
                   controller: _emailController,
                   icon: Icons.email,
@@ -149,8 +117,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: _validateEmail,
                 ),
                 const SizedBox(height: 15),
-
-                // Phone Number TextField
                 _buildTextField(
                   controller: _phoneController,
                   icon: Icons.phone,
@@ -159,8 +125,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: _validatePhone,
                 ),
                 const SizedBox(height: 15),
-
-                // Age TextField
                 _buildTextField(
                   controller: _ageController,
                   icon: Icons.cake,
@@ -169,8 +133,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: _validateAge,
                 ),
                 const SizedBox(height: 15),
-
-                // Height TextField
                 _buildTextField(
                   controller: _heightController,
                   icon: Icons.height,
@@ -179,8 +141,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: _validateHeight,
                 ),
                 const SizedBox(height: 15),
-
-                // Weight TextField
                 _buildTextField(
                   controller: _weightController,
                   icon: Icons.monitor_weight,
@@ -189,8 +149,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: _validateWeight,
                 ),
                 const SizedBox(height: 30),
-
-                // Password TextField with visibility toggle
                 _buildTextField(
                   controller: _passwordController,
                   icon: Icons.lock,
@@ -209,16 +167,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Sign Up Button
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Signing up...')),
-                      );
-                    }
-                  },
+                  onPressed: _isLoading ? null : _registerUser,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
@@ -226,14 +176,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Sign Up',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
                 const SizedBox(height: 20),
-
-                // Sign In Option
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -262,7 +212,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // Function to build a styled text field
   Widget _buildTextField({
     required TextEditingController controller,
     required IconData icon,
@@ -292,5 +241,72 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       validator: validator,
     );
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your full name';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(value)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    if (!RegExp(r"^\d{10}").hasMatch(value)) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
+  }
+
+  String? _validateAge(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your age';
+    }
+    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+      return 'Please enter a valid age';
+    }
+    return null;
+  }
+
+  String? _validateHeight(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your height';
+    }
+    if (double.tryParse(value) == null || double.parse(value) <= 0) {
+      return 'Please enter a valid height';
+    }
+    return null;
+  }
+
+  String? _validateWeight(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your weight';
+    }
+    if (double.tryParse(value) == null || double.parse(value) <= 0) {
+      return 'Please enter a valid weight';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
   }
 }
