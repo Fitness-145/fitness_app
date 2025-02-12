@@ -1,5 +1,6 @@
-import 'package:fitness_app/user/screens/loginscreen.dart';
+
 import 'package:flutter/material.dart';
+import 'package:fitness_app/user/screens/loginscreen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -7,71 +8,93 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Spacer(),
-            // Logo
-            const Icon(
-              Icons.fitness_center,
-              color: Colors.purple,
-              size: 80,
-            ),
-            const SizedBox(height: 20),
-            // Welcome Text
-            const Text(
-              "Welcome to your Fitness ",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.purple, Colors.deepPurple],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              // Logo Icon
+              const Icon(
+                Icons.fitness_center,
+                color: Colors.white,
+                size: 90,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "The best UI Kit for your next health\nand fitness project!",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+              const SizedBox(height: 20),
+              // Inspiration Quote
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 30),
+                child: Text(
+                  "Success isn’t always about greatness. It’s about consistency. Keep going, keep pushing!",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            // Illustration Image (replace with actual image asset)
-
-            const Spacer(),
-            // Get Started Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+              const SizedBox(height: 30),
+              // Welcome Text
+              const Text(
+                "Get Fit, Stay Strong!",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "Your AI-powered fitness journey starts here.",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              const Spacer(),
+              // Get Started Button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) =>const LoginScreen(),
-                      ));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                ),
-                child: const Center(
-                  child: Text(
+                      MaterialPageRoute(builder: (context) => const  LoginScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.arrow_forward, color: Colors.purple),
+                  label: const Text(
                     "Get Started",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Sign In Link
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

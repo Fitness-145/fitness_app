@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app/admin/admindashboard.dart';
 import 'package:fitness_app/user/screens/TrainerDashboard.dart';
-import 'package:fitness_app/user/screens/sub_category_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/category.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
           .get();
 
       if (userQuery.docs.isEmpty) {
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('User not found. Please sign up.')),
         );
@@ -57,15 +58,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Navigate based on role
       if (role == 'admin') {
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const AdminDashboard()),
-        // );
-      } else if (role == 'trainer') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const TrainerDashboard()),
+          MaterialPageRoute(builder: (context) => const AdminDashboard()),
         );
+      // } else if (role == 'trainer') {
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => const   AdminDashboard()),
+      //   );
       } else {
         Navigator.pushReplacement(
           context,
