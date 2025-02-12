@@ -1,133 +1,145 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:fitness_app/user/screens/loginscreen.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // To pick images from gallery/camera
+import 'package:image_picker/image_picker.dart';
+ 
 
-class ProfilePictureScreen extends StatefulWidget {
-  const ProfilePictureScreen({super.key});
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
 
   @override
-  _ProfilePictureScreenState createState() => _ProfilePictureScreenState();
+  _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
-  // Default user details
-  String userName = 'John Doe';
-  String userEmail = 'johndoe@example.com';
-  int userAge = 25;
-  String fitnessGoal = 'Lose Weight'; // Default goal
-  double height = 175; // Default height in cm
-  double weight = 70; // Default weight in kg
-  String gender = 'Male'; // Default gender
+class _ProfileScreenState extends State<ProfileScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ImagePicker _picker = ImagePicker();
 
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController ageController = TextEditingController();
-  final TextEditingController heightController = TextEditingController();
-  final TextEditingController weightController = TextEditingController();
-  final TextEditingController goalController = TextEditingController();
+  User? _user;
+  String profilePicUrl = "";
+  String userName = "No Name";
+  String userEmail = "No Email";
+  int userAge = 0;
+  String fitnessGoal = "No Goal";
+  double height = 0.0;
+  double weight = 0.0;
+  String gender = "Not Specified";
+
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the controllers with the default values
-    nameController.text = userName;
-    emailController.text = userEmail;
-    ageController.text = userAge.toString();
-    heightController.text = height.toString();
-    weightController.text = weight.toString();
-    goalController.text = fitnessGoal;
+    _user = _auth.currentUser;
+    _fetchUserData();
   }
 
-  // Function to handle profile pic change (using Image Picker)
-  Future<void> changeProfilePic() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+  Future<void> _fetchUserData() async {
+    if (_user == null) {
+      print("User not logged in.");
+      setState(() => isLoading = false);
+      return;
+    }
 
-    if (pickedFile != null) {
-      setState(() {
-        // Set new profile picture path
-        // profilePic = pickedFile.path; 
-      });
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection("users").doc(_user!.uid).get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        setState(() {
+          profilePicUrl = userData["profilePic"] ?? "";
+          userName = userData["name"] ?? "No Name";
+          userEmail = userData["email"] ?? "No Email";
+          userAge = userData["age"] ?? 0;
+          height = (userData["height"] ?? 0.0).toDouble();
+          weight = (userData["weight"] ?? 0.0).toDouble();
+          fitnessGoal = userData["fitnessGoal"] ?? "No Goal";
+          gender = userData["gender"] ?? "Not Specified";
+          isLoading = false;
+        });
+      } else {
+        print("User document does not exist.");
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print("Error fetching user data: $e");
+      setState(() => isLoading = false);
     }
   }
 
-  // Function to handle editing any field
-  void editField(String field) {
+  Future<void> _updateUserData() async {
+    if (_user == null) return;
+
+    try {
+      await _firestore.collection("users").doc(_user!.uid).update({
+        "name": userName,
+        "email": userEmail,
+        "age": userAge,
+        "height": height,
+        "weight": weight,
+        "fitnessGoal": fitnessGoal,
+        "gender": gender,
+        "profilePic": profilePicUrl,
+      });
+
+      print("User data updated successfully.");
+    } catch (e) {
+      print("Error updating user data: $e");
+    }
+  }
+
+  Future<void> _changeProfilePic() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    File imageFile = File(pickedFile.path);
+    String fileName = "profile_${_user!.uid}.jpg";
+
+    try {
+      UploadTask uploadTask = FirebaseStorage.instance.ref().child("profile_pics/$fileName").putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      setState(() => profilePicUrl = downloadUrl);
+      await _firestore.collection("users").doc(_user!.uid).update({"profilePic": profilePicUrl});
+
+      print("Profile picture updated successfully.");
+    } catch (e) {
+      print("Error uploading profile picture: $e");
+    }
+  }
+
+  void _editField(String field, TextEditingController controller) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit $field'),
-          content: field == 'Name'
-              ? TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Enter Name',
-                  ),
-                )
-              : field == 'Email'
-                  ? TextField(
-                      controller: emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter Email',
-                      ),
-                    )
-                  : field == 'Age'
-                      ? TextField(
-                          controller: ageController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Enter Age',
-                          ),
-                        )
-                      : field == 'Height'
-                          ? TextField(
-                              controller: heightController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'Enter Height (cm)',
-                              ),
-                            )
-                          : field == 'Weight'
-                              ? TextField(
-                                  controller: weightController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Enter Weight (kg)',
-                                  ),
-                                )
-                              : TextField(
-                                  controller: goalController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Enter Fitness Goal',
-                                  ),
-                                ),
+          title: Text("Edit $field"),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(labelText: "Enter $field"),
+          ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
             TextButton(
               onPressed: () {
                 setState(() {
-                  if (field == 'Name') {
-                    userName = nameController.text;
-                  } else if (field == 'Email') {
-                    userEmail = emailController.text;
-                  } else if (field == 'Age') {
-                    userAge = int.parse(ageController.text);
-                  } else if (field == 'Height') {
-                    height = double.parse(heightController.text);
-                  } else if (field == 'Weight') {
-                    weight = double.parse(weightController.text);
-                  } else if (field == 'Goal') {
-                    fitnessGoal = goalController.text;
-                  }
+                  if (field == "Name") userName = controller.text;
+                  if (field == "Email") userEmail = controller.text;
+                  if (field == "Age") userAge = int.tryParse(controller.text) ?? userAge;
+                  if (field == "Height") height = double.tryParse(controller.text) ?? height;
+                  if (field == "Weight") weight = double.tryParse(controller.text) ?? weight;
+                  if (field == "Goal") fitnessGoal = controller.text;
                 });
-                Navigator.of(context).pop();
+                _updateUserData();
+                Navigator.pop(context);
               },
-              child: const Text('Save'),
+              child: const Text("Save"),
             ),
           ],
         );
@@ -140,181 +152,91 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
-        ),
+        backgroundColor: Colors.purple,
+        title: const Text("Profile"),
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
 
-            // Profile Picture Section with Icon
-            GestureDetector(
-              onTap: changeProfilePic,  // Change profile pic when tapped
-              child: const CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.purple,
-                child: Icon(
-                  Icons.person,
-                  size: 60,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Profile Picture',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap to change your profile picture',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            // User Information Section
-            const Text(
-              'User Information',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Editable Name Field with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(userName),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.purple),
-                  onPressed: () => editField('Name'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Editable Email Field with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(userEmail),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.purple),
-                  onPressed: () => editField('Email'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Editable Age Field with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(userAge.toString()),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.purple),
-                  onPressed: () => editField('Age'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Editable Height Field with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text('$height cm'),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.purple),
-                  onPressed: () => editField('Height'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Editable Weight Field with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text('$weight kg'),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.purple),
-                  onPressed: () => editField('Weight'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Editable Goal Field with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(fitnessGoal),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.purple),
-                  onPressed: () => editField('Goal'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Continue Button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // Continue button functionality
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                  // Profile Picture Section
+                  GestureDetector(
+                    onTap: _changeProfilePic,
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.purple,
+                      backgroundImage: profilePicUrl.isNotEmpty ? NetworkImage(profilePicUrl) : null,
+                      child: profilePicUrl.isEmpty
+                          ? const Icon(Icons.person, size: 60, color: Colors.white)
+                          : null,
+                    ),
                   ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
+                  const SizedBox(height: 20),
+                  const Text("Profile Picture", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 30),
+
+                  // User Information Section
+                  _buildProfileField("Name", userName),
+                  _buildProfileField("Email", userEmail),
+                  _buildProfileField("Age", userAge.toString()),
+                  _buildProfileField("Height", "$height cm"),
+                  _buildProfileField("Weight", "$weight kg"),
+                  _buildProfileField("Fitness Goal", fitnessGoal),
+                  _buildProfileField("Gender", gender),
+
+                  const SizedBox(height: 20),
+
+                  // Logout Button
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await _auth.signOut();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                          (route) => false, // Clears navigation history
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text("Logout", style: TextStyle(fontSize: 18, color: Colors.white)),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+    );
+  }
+
+  Widget _buildProfileField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+          Row(
+            children: [
+              Text(value, style: const TextStyle(fontSize: 18, color: Colors.grey)),
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.purple),
+                onPressed: () {
+                  TextEditingController controller = TextEditingController(text: value);
+                  _editField(label, controller);
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

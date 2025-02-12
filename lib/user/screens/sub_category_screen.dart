@@ -77,13 +77,11 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
     // Add data to Firestore
     try {
-      String userId = FirebaseAuth.instance.currentUser!
-          .uid; // Replace with the actual user ID (e.g., from Firebase Auth)
+      String userId = FirebaseAuth.instance.currentUser!.uid;
       String paymentId = response.paymentId!;
       String paymentStatus = "Success";
       int totalFee = this.totalFee;
 
-      // Prepare the data to be added to Firestore
       Map<String, dynamic> paymentData = {
         'userId': userId,
         'paymentId': paymentId,
@@ -94,11 +92,10 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       };
 
-      // Add data to the 'my_plan' collection
       await _firestore.collection('my_plan').add(paymentData);
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PlanPage()),
+        MaterialPageRoute(builder: (context) => const MyPlanScreen()),
       );
 
       print("Data added to Firestore successfully!");
@@ -130,9 +127,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       'name': 'Fitness App',
       'description': 'Payment for selected categories',
       'prefill': {'contact': '1234567890', 'email': 'user@example.com'},
-      'external': {
-        'wallets': ['paytm']
-      }
+      'external': {'wallets': ['paytm']}
     };
 
     try {
@@ -145,30 +140,42 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Category Selection"),
-        backgroundColor: Colors.purple,
+        title: const Text("Category Selection", style: TextStyle(color: Colors.purple)), // Appbar title in purple
+        backgroundColor: Colors.white, // Appbar background white
+        iconTheme: const IconThemeData(color: Colors.purple), // Back button in purple
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                const Text(
-                  "Select Categories and Subcategories",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+      body: SizedBox( // Added SizedBox for full screen gradient
+        height: MediaQuery.of(context).size.height,
+        child: Container( // Container with gradient
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purple, Colors.deepPurple],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Select Categories and Subcategories",
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white), // Text in white
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCategoryGrid(),
+                    const SizedBox(height: 20),
+                    if (selectedSubcategories.isNotEmpty) _buildCategoryDetails(),
+                    const SizedBox(height: 20),
+                    if (selectedSubcategories.isNotEmpty) _buildSummarySection(),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                _buildCategoryGrid(),
-                const SizedBox(height: 20),
-                if (selectedSubcategories.isNotEmpty) _buildCategoryDetails(),
-                const SizedBox(height: 20),
-                if (selectedSubcategories.isNotEmpty) _buildSummarySection(),
-              ],
+              ),
             ),
           ),
         ),
@@ -203,8 +210,8 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           },
           child: Card(
             color: selectedSubcategories.containsKey(interest)
-                ? Colors.purple
-                : Colors.white,
+                ? Colors.white // Card in white when selected
+                : Colors.purple[200], // Card in lighter purple when unselected
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -214,8 +221,8 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                 interest,
                 style: TextStyle(
                   color: selectedSubcategories.containsKey(interest)
-                      ? Colors.white
-                      : Colors.black,
+                      ? Colors.purple // Text in purple when card selected
+                      : Colors.white, // Text in white when card unselected
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -237,13 +244,13 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           children: [
             Text(
               "Select Subcategory and Time Slot for $category",
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white), // Text in white
             ),
             const SizedBox(height: 10),
             ...subcategoryList.map((subcategory) {
               final fee = subcategoryFeesData[subcategory] ?? 0;
               return RadioListTile<String>(
-                title: Text("$subcategory (₹$fee)"),
+                title: Text("$subcategory (₹$fee)", style: const TextStyle(color: Colors.white)), // Text in white
                 value: subcategory,
                 groupValue: selectedSubcategories[category],
                 onChanged: (value) {
@@ -252,16 +259,21 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                     subcategoryFees[category] = fee;
                   });
                 },
+                activeColor: Colors.white, // Radio button active color in white
+                tileColor: Colors.deepPurple.withOpacity(0.2), // Tile background for better visibility
+                dense: true, // To reduce vertical spacing
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10), // Adjust padding as needed
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)), // Rounded corners
               );
             }),
             const SizedBox(height: 20),
             const Text(
               "Select Time Slot",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), // Text in white
             ),
             ...timeSlots.map((slot) {
               return RadioListTile<String>(
-                title: Text(slot),
+                title: Text(slot, style: const TextStyle(color: Colors.white)), // Text in white
                 value: slot,
                 groupValue: selectedTimes[category],
                 onChanged: (value) {
@@ -269,6 +281,11 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                     selectedTimes[category] = value;
                   });
                 },
+                activeColor: Colors.white, // Radio button active color in white
+                tileColor: Colors.deepPurple.withOpacity(0.2), // Tile background for better visibility
+                dense: true, // To reduce vertical spacing
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10), // Adjust padding as needed
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)), // Rounded corners
               );
             }),
           ],
@@ -283,7 +300,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       children: [
         const Text(
           "Summary",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white), // Text in white
         ),
         const SizedBox(height: 10),
         ...selectedSubcategories.entries.map((entry) {
@@ -293,14 +310,14 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           final fee = subcategoryFees[category] ?? 0;
           return Container(
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
+              border: Border.all(color: Colors.white70), // Lighter border color
               borderRadius: BorderRadius.circular(8),
             ),
             margin: const EdgeInsets.symmetric(vertical: 5),
             padding: const EdgeInsets.all(10),
             child: Text(
               "$category - $subcategory, Time: $timeSlot, Fee: ₹$fee",
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Colors.white), // Text in white
             ),
           );
         }),
@@ -310,26 +327,28 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.green,
+            color: Colors.white, // Total fee in white
           ),
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: selectedSubcategories.values
-                      .any((value) => value == null) ||
+          onPressed: selectedSubcategories.values.any((value) => value == null) ||
                   selectedTimes.values.any((value) => value == null)
-              ? null // Disable button if subcategory or time slot is not selected
+              ? null
               : () {
                   _openRazorpayPayment();
                 },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purple,
-            padding: const EdgeInsets.symmetric(vertical: 15.0),
+            backgroundColor: Colors.white, // Button in white
+            padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 40), // Adjusted horizontal padding
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
           child: const Center(
             child: Text(
               "Continue to Payment",
-              style: TextStyle(fontSize: 18, color: Colors.white),
+              style: TextStyle(fontSize: 18, color: Colors.purple, fontWeight: FontWeight.bold), // Button text in purple
             ),
           ),
         ),
