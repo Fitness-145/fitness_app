@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +35,10 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _registerUser() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Validate the form
+    if (!_formKey.currentState!.validate()) {
+      return; // Stop if validation fails
+    }
 
     setState(() {
       _isLoading = true;
@@ -61,7 +63,7 @@ class _SignupScreenState extends State<SignupScreen> {
         'height': double.parse(_heightController.text.trim()),
         'weight': double.parse(_weightController.text.trim()),
         'phone': _phoneController.text.trim(),
-        'role':'user',
+        'role': 'user',
         'created_at': Timestamp.now(),
       });
 
@@ -279,7 +281,7 @@ class _SignupScreenState extends State<SignupScreen> {
       return 'Please enter your phone number';
     }
     if (!RegExp(r"^\d{10}").hasMatch(value)) {
-      return 'Please enter a valid phone number';
+      return 'Please enter a valid 10-digit phone number';
     }
     return null;
   }
@@ -289,7 +291,7 @@ class _SignupScreenState extends State<SignupScreen> {
       return 'Please enter your age';
     }
     if (int.tryParse(value) == null || int.parse(value) <= 0) {
-      return 'Please enter a valid age';
+      return 'Please enter a valid age (must be a positive number)';
     }
     return null;
   }
@@ -299,7 +301,7 @@ class _SignupScreenState extends State<SignupScreen> {
       return 'Please enter your height';
     }
     if (double.tryParse(value) == null || double.parse(value) <= 0) {
-      return 'Please enter a valid height';
+      return 'Please enter a valid height (must be a positive number)';
     }
     return null;
   }
@@ -309,7 +311,7 @@ class _SignupScreenState extends State<SignupScreen> {
       return 'Please enter your weight';
     }
     if (double.tryParse(value) == null || double.parse(value) <= 0) {
-      return 'Please enter a valid weight';
+      return 'Please enter a valid weight (must be a positive number)';
     }
     return null;
   }
