@@ -162,7 +162,7 @@ class _UserManagementState extends State<UserManagement> {
   }
 
   void _showUserDetails(BuildContext context, QueryDocumentSnapshot? user, String? userId) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     TextEditingController nameController = TextEditingController(text: user?['name'] ?? '');
     TextEditingController emailController = TextEditingController(text: user?['email'] ?? '');
@@ -178,7 +178,7 @@ class _UserManagementState extends State<UserManagement> {
         return AlertDialog(
           title: Text(user == null ? "Add New User" : "Edit User"),
           content: Form(
-            key: _formKey,
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -197,7 +197,7 @@ class _UserManagementState extends State<UserManagement> {
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
             ElevatedButton(
               onPressed: () {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   if (user == null) {
                     _firestore.collection("users").add({
                       "name": nameController.text,
@@ -234,7 +234,7 @@ class _UserManagementState extends State<UserManagement> {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: TextFormField(
         controller: controller,
-        decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
         validator: validator,
       ),
     );

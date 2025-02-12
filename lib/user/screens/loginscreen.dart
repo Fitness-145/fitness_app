@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/admin/admindashboard.dart';
-import 'package:fitness_app/user/screens/TrainerDashboard.dart';
+import 'package:fitness_app/user/screens/forgotpassword.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/category.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
-
+ 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -62,11 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (context) => const AdminDashboard()),
         );
-      // } else if (role == 'trainer') {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => const   AdminDashboard()),
-      //   );
       } else {
         Navigator.pushReplacement(
           context,
@@ -117,7 +112,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: _forgotPassword,
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const  ForgotPasswordScreen()),
+                    ),
                     child: const Text('Forgot Password?', style: TextStyle(color: Colors.purple)),
                   ),
                 ),
@@ -167,19 +165,6 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) return 'Please enter your password';
     return value.length < 6 ? 'Password must be at least 6 characters' : null;
-  }
-
-  void _forgotPassword() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Forgot Password'),
-        content: const Text('Password reset instructions will be sent to your email.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-        ],
-      ),
-    );
   }
 
   Widget _buildTextField(TextEditingController controller, IconData icon, String hintText, FormFieldValidator<String>? validator, {bool obscureText = false, Widget? suffixIcon}) {

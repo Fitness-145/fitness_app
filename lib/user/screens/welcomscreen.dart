@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/loginscreen.dart';
 
@@ -71,7 +70,7 @@ class WelcomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const  LoginScreen()),
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
                     );
                   },
                   icon: const Icon(Icons.arrow_forward, color: Colors.purple),
@@ -88,7 +87,9 @@ class WelcomeScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    minimumSize: const Size(150, 50), // Adjusted size for better fit
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Makes it fit content
                   ),
                 ),
               ),
