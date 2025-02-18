@@ -9,8 +9,8 @@ class UserManagement extends StatefulWidget {
 }
 
 class _UserManagementState extends State<UserManagement> {
-  String selectedRole = "User"; // ✅ Set default view to "User"
-  String selectedSort = "Date (Newest First)";
+  String selectedRole = "User"; // ✅ Default role filter
+  String selectedSort = "Date";
   String searchQuery = "";
   Set<String> selectedUsers = {};
 
@@ -74,7 +74,7 @@ class _UserManagementState extends State<UserManagement> {
               _buildDropdown(
                 title: "Sort By",
                 value: selectedSort,
-                items: ["Date (Newest First)", "Subscription", "A-Z Order"],
+                items: ["Date", "Subscription", "Name"],
                 onChanged: (value) {
                   setState(() {
                     selectedSort = value!;
@@ -87,25 +87,33 @@ class _UserManagementState extends State<UserManagement> {
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection("users").snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData)
+                  return const Center(child: CircularProgressIndicator());
 
                 List<QueryDocumentSnapshot> users = snapshot.data!.docs;
 
                 // ✅ Default role filter set to "User"
                 if (selectedRole != "All Users") {
-                  users = users.where((user) => user['role'] == selectedRole.toLowerCase()).toList();
+                  users = users
+                      .where(
+                          (user) => user['role'] == selectedRole.toLowerCase())
+                      .toList();
                 }
 
                 // Apply search filter
                 if (searchQuery.isNotEmpty) {
-                  users = users.where((user) => user['name'].toLowerCase().contains(searchQuery)).toList();
+                  users = users
+                      .where((user) =>
+                          user['name'].toLowerCase().contains(searchQuery))
+                      .toList();
                 }
 
                 // Apply sorting
-                if (selectedSort == "A-Z Order") {
+                if (selectedSort == "Name") {
                   users.sort((a, b) => a['name'].compareTo(b['name']));
-                } else if (selectedSort == "Date (Newest First)") {
-                  users.sort((a, b) => b['created_at'].compareTo(a['created_at']));
+                } else if (selectedSort == "Date") {
+                  users.sort(
+                      (a, b) => b['created_at'].compareTo(a['created_at']));
                 }
 
                 return ListView.builder(
@@ -124,22 +132,46 @@ class _UserManagementState extends State<UserManagement> {
                           }
                         });
                       },
-                      child: ListTile(
-                        tileColor: isSelected ? Colors.grey[300] : null,
-                        title: Text(user['name']),
-                        subtitle: Text("Email: ${user['email']} | Role: ${user['role']}"),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () => _showUserDetails(context, user, user.id),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteUser(user.id),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.grey[300] : Colors.white,
+                          border:
+                              Border.all(color: Colors.deepPurple, width: 1.5),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
                             ),
                           ],
+                        ),
+                        child: ListTile(
+                          title: Text(
+                            user['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                              "Email: ${user['email']} | Role: ${user['role']}"),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () =>
+                                    _showUserDetails(context, user, user.id),
+                              ),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteUser(user.id),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -153,22 +185,34 @@ class _UserManagementState extends State<UserManagement> {
     );
   }
 
-  Widget _buildDropdown({required String title, required String value, required List<String> items, required Function(String?) onChanged}) {
+  Widget _buildDropdown(
+      {required String title,
+      required String value,
+      required List<String> items,
+      required Function(String?) onChanged}) {
     return DropdownButton<String>(
       value: value,
       onChanged: onChanged,
-      items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+      items: items
+          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .toList(),
     );
   }
 
-  void _showUserDetails(BuildContext context, QueryDocumentSnapshot? user, String? userId) {
+  void _showUserDetails(
+      BuildContext context, QueryDocumentSnapshot? user, String? userId) {
     final formKey = GlobalKey<FormState>();
 
-    TextEditingController nameController = TextEditingController(text: user?['name'] ?? '');
-    TextEditingController emailController = TextEditingController(text: user?['email'] ?? '');
-    TextEditingController phoneController = TextEditingController(text: user?['phone'] ?? '');
-    TextEditingController ageController = TextEditingController(text: user?['age']?.toString() ?? '');
-    TextEditingController heightController = TextEditingController(text: user?['height']?.toString() ?? '');
+    TextEditingController nameController =
+        TextEditingController(text: user?['name'] ?? '');
+    TextEditingController emailController =
+        TextEditingController(text: user?['email'] ?? '');
+    TextEditingController phoneController =
+        TextEditingController(text: user?['phone'] ?? '');
+    TextEditingController ageController =
+        TextEditingController(text: user?['age']?.toString() ?? '');
+    TextEditingController heightController =
+        TextEditingController(text: user?['height']?.toString() ?? '');
 
     String role = user?['role'] ?? 'User';
 
@@ -182,42 +226,53 @@ class _UserManagementState extends State<UserManagement> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildTextField(nameController, "Name", (value) => value!.isEmpty ? "Enter a valid name" : null),
-                _buildTextField(emailController, "Email", (value) => value!.contains("@") ? null : "Enter a valid email"),
-                _buildTextField(phoneController, "Phone", (value) => value!.length == 10 ? null : "Enter a valid phone number"),
+                _buildTextField(nameController, "Name",
+                    (value) => value!.isEmpty ? "Enter a valid name" : null),
+                _buildTextField(
+                    emailController,
+                    "Email",
+                    (value) =>
+                        value!.contains("@") ? null : "Enter a valid email"),
+                _buildTextField(
+                    phoneController,
+                    "Phone",
+                    (value) => value!.length == 10
+                        ? null
+                        : "Enter a valid phone number"),
                 _buildTextField(ageController, "Age", (value) {
                   int? age = int.tryParse(value!);
-                  return (age != null && age >= 10 && age <= 99) ? null : "Age must be 10-99";
+                  return (age != null && age >= 10 && age <= 99)
+                      ? null
+                      : "Age must be 10-99";
                 }),
-                _buildTextField(heightController, "Height", (value) => int.tryParse(value!) != null ? null : "Enter a valid height"),
+                _buildTextField(
+                    heightController,
+                    "Height",
+                    (value) => int.tryParse(value!) != null
+                        ? null
+                        : "Enter a valid height"),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel")),
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  if (user == null) {
-                    _firestore.collection("users").add({
-                      "name": nameController.text,
-                      "email": emailController.text,
-                      "phone": phoneController.text,
-                      "age": int.parse(ageController.text),
-                      "height": int.parse(heightController.text),
-                      "role": role.toLowerCase(),
-                      "created_at": Timestamp.now(),
-                    });
-                  } else {
-                    _firestore.collection("users").doc(userId).update({
-                      "name": nameController.text,
-                      "email": emailController.text,
-                      "phone": phoneController.text,
-                      "age": int.parse(ageController.text),
-                      "height": int.parse(heightController.text),
-                      "role": role.toLowerCase(),
-                    });
-                  }
+                  _firestore
+                      .collection("users")
+                      .doc(userId ?? _firestore.collection("users").doc().id)
+                      .set({
+                    "name": nameController.text,
+                    "email": emailController.text,
+                    "phone": phoneController.text,
+                    "age": int.parse(ageController.text),
+                    "height": int.parse(heightController.text),
+                    "role": role.toLowerCase(),
+                    "created_at": Timestamp.now(),
+                  });
                   Navigator.pop(context);
                 }
               },
@@ -229,12 +284,14 @@ class _UserManagementState extends State<UserManagement> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String? Function(String?) validator) {
+  Widget _buildTextField(TextEditingController controller, String label,
+      String? Function(String?) validator) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: TextFormField(
         controller: controller,
-        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
         validator: validator,
       ),
     );
