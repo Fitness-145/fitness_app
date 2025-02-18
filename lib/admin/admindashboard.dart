@@ -3,7 +3,7 @@ import 'package:fitness_app/admin/usermanage.dart';
  
 import 'package:flutter/material.dart';
 
-import 'workout_diet_management.dart';
+import 'ContentManagement.dart';
 import 'subscription_tracking.dart';
 import 'reports_analytics.dart';
 
@@ -30,7 +30,7 @@ class AdminDashboard extends StatelessWidget {
             _buildCard(context, "User Management", Icons.person,
                 const UserManagement()),
             _buildCard(context, "Workout & Diet", Icons.fitness_center,
-                const WorkoutDietManagement()),
+                const ContentManagement()),
             _buildCard(context, "Subscription Tracking", Icons.payment,
                 const SubscriptionTracking()),
             _buildCard(context, "Reports & Analytics", Icons.analytics,
