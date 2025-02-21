@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/admin/admindashboard.dart';
+import 'package:fitness_app/user/screens/TrainerDashboard.dart';
 import 'package:fitness_app/user/screens/forgotpassword.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/category.dart';
@@ -53,14 +54,21 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-
+      print(role);
       // Navigate based on role
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const AdminDashboard()),
         );
-      } else {
+      }
+      else if (role == 'trainer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const TrainerDashboard()),
+        );
+      }
+       else {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

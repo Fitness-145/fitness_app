@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/user/screens/myplan.dart';
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 class CategorySelectionScreen extends StatefulWidget {
   const CategorySelectionScreen({super.key, required this.selectedInterests});
@@ -93,14 +94,21 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       };
 
       await _firestore.collection('my_plan').add(paymentData);
+
+      // Store payment success in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isPaymentSuccessful', true); // Set payment success flag
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MyPlanScreen()),
       );
 
       print("Data added to Firestore successfully!");
+      print("Payment status saved in shared preferences");
     } catch (e) {
       print("Error adding data to Firestore: $e");
+      print("Error saving payment status in shared preferences: $e");
     }
   }
 
@@ -211,7 +219,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           child: Card(
             color: selectedSubcategories.containsKey(interest)
                 ? Colors.white // Card in white when selected
-                : Colors.purple[200], // Card in lighter purple when unselected
+                : const Color.fromARGB(255, 117, 38, 131), // Card in lighter purple when unselected
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),

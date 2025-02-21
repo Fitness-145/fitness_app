@@ -1,7 +1,9 @@
 import 'package:fitness_app/user/screens/myplan.dart';
-import 'package:fitness_app/user/screens/sub_category_screen.dart';
 import 'package:fitness_app/user/screens/profilescreen.dart';
+import 'package:fitness_app/user/screens/sub_category_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
+
 
 class CustomizeInterestsScreen extends StatefulWidget {
   const CustomizeInterestsScreen({super.key});
@@ -13,6 +15,7 @@ class CustomizeInterestsScreen extends StatefulWidget {
 
 class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
   int _currentIndex = 0; // Track the selected bottom navigation item
+  bool isPaymentSuccessful = false; // Variable to hold payment status
 
   // Track selected interests
   final List<Map<String, dynamic>> interests = [
@@ -23,6 +26,27 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
     {'interest': 'Shooting', 'icon': Icons.sports_esports, 'selected': false},
     {'interest': 'Boxing', 'icon': Icons.sports_mma, 'selected': false},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPaymentStatus(); // Call method to check payment status on screen load
+  }
+
+  _checkPaymentStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool paymentStatus = prefs.getBool('isPaymentSuccessful') ?? false; // Default to false if not found
+    setState(() {
+      isPaymentSuccessful = paymentStatus;
+    });
+    if (isPaymentSuccessful) {
+      print("Payment was successful in CustomizeInterestsScreen!");
+      // You can now use isPaymentSuccessful to conditionally show content
+    } else {
+      print("Payment was not successful or not yet made in CustomizeInterestsScreen.");
+    }
+  }
+
 
   void _onBottomNavTapped(int index) {
     setState(() {
@@ -38,7 +62,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
         ),
       );
     } else if (index == 2) {
-      // Navigate to the ProfilePictureScreen when the Profile icon is tapped
+      // Navigate to the ProfileScreen when the Profile icon is tapped
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -50,6 +74,9 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Print the payment status in the build method as well for every build cycle
+    print("Payment Successful Status in Build Method: $isPaymentSuccessful");
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -60,7 +87,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SizedBox(
+      body: isPaymentSuccessful?  MyPlanScreen()  :  SizedBox(
         height: MediaQuery.of(context).size.height,
         child: Container(
           decoration: const BoxDecoration(

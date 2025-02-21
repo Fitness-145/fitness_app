@@ -160,8 +160,7 @@ class _UserManagementState extends State<UserManagement> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon:
-                                    const Icon(Icons.edit, color: Colors.blue),
+                                icon: const Icon(Icons.edit, color: Colors.blue),
                                 onPressed: () =>
                                     _showUserDetails(context, user, user.id),
                               ),
@@ -213,8 +212,10 @@ class _UserManagementState extends State<UserManagement> {
         TextEditingController(text: user?['age']?.toString() ?? '');
     TextEditingController heightController =
         TextEditingController(text: user?['height']?.toString() ?? '');
+    TextEditingController passwordController = // Added password controller
+        TextEditingController();
 
-    String role = user?['role'] ?? 'User';
+    String role = user?['role'] ?? 'user'; // Default role to 'user' for new users or existing users without role
 
     showDialog(
       context: context,
@@ -251,6 +252,31 @@ class _UserManagementState extends State<UserManagement> {
                     (value) => int.tryParse(value!) != null
                         ? null
                         : "Enter a valid height"),
+                // ✅ Role Dropdown
+                DropdownButtonFormField<String>(
+                  value: role,
+                  decoration: const InputDecoration(
+                      labelText: 'Role', border: OutlineInputBorder()),
+                  items: ['user', 'trainer'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value.toUpperCase()),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      role = newValue!;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Please select a role' : null,
+                ),
+                if (user == null) // ✅ Show password field only for new users
+                  _buildTextField(
+                      passwordController,
+                      "Password",
+                      (value) =>
+                          value!.isEmpty ? "Password is required" : null),
               ],
             ),
           ),
@@ -261,10 +287,7 @@ class _UserManagementState extends State<UserManagement> {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  _firestore
-                      .collection("users")
-                      .doc(userId ?? _firestore.collection("users").doc().id)
-                      .set({
+                  Map<String, dynamic> userData = {
                     "name": nameController.text,
                     "email": emailController.text,
                     "phone": phoneController.text,
@@ -272,7 +295,15 @@ class _UserManagementState extends State<UserManagement> {
                     "height": int.parse(heightController.text),
                     "role": role.toLowerCase(),
                     "created_at": Timestamp.now(),
-                  });
+                  };
+                  if (user == null) { // Add password only for new users
+                    userData['password'] = passwordController.text; // ⚠️ Insecure in real production - storing plain text passwords!
+                  }
+
+                  _firestore
+                      .collection("users")
+                      .doc(userId ?? _firestore.collection("users").doc().id)
+                      .set(userData);
                   Navigator.pop(context);
                 }
               },
@@ -287,11 +318,19 @@ class _UserManagementState extends State<UserManagement> {
   Widget _buildTextField(TextEditingController controller, String label,
       String? Function(String?) validator) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
-            labelText: label, border: const OutlineInputBorder()),
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.deepPurple),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
+          ),
+        ),
         validator: validator,
       ),
     );

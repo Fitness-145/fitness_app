@@ -1,107 +1,138 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ContentManagement extends StatefulWidget {
-  const ContentManagement({super.key});
+  const ContentManagement({Key? key}) : super(key: key);
 
   @override
   _ContentManagementState createState() => _ContentManagementState();
 }
 
 class _ContentManagementState extends State<ContentManagement> {
-  final List<Map<String, String>> _contentList = [];
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final ImagePicker _picker = ImagePicker();
 
-  /// Function to pick files (Images, Audio, Files)
-  Future<void> _pickContent(String type) async {
-    FileType fileType = FileType.any;
+  File? _selectedFile;
+  String? _uploadedFileURL;
+  final TextEditingController _youtubeController = TextEditingController();
+  List<String> _youtubeLinks = [];
 
-    if (type == 'Image') {
-      fileType = FileType.image;
-    } else if (type == 'Audio') {
-      fileType = FileType.audio;
-    }
-
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: fileType);
-
-    if (result != null && result.files.isNotEmpty) {
-      String filePath = result.files.single.path ?? "";
+  Future<void> _uploadFile(File file, String path) async {
+    try {
+      await _storage.ref(path).putFile(file);
+      final url = await _storage.ref(path).getDownloadURL();
       setState(() {
-        _contentList.add({'type': type, 'path': filePath});
+        _uploadedFileURL = url;
       });
-    } else {
-      // Handle case where user cancels file picking
-      debugPrint("No file selected");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('File Uploaded!')));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Upload Failed: $e')));
     }
   }
 
-  /// Function to delete content
-  void _deleteContent(int index) {
-    setState(() {
-      _contentList.removeAt(index);
-    });
+  Future<void> _pickFile() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedFile = File(pickedFile.path);
+      });
+    }
   }
 
-  /// Show bottom sheet for content selection
-  void _showAddOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.image),
-              title: const Text("Add Image"),
-              onTap: () {
-                Navigator.pop(context);
-                _pickContent('Image');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.audiotrack),
-              title: const Text("Add Audio"),
-              onTap: () {
-                Navigator.pop(context);
-                _pickContent('Audio');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.attach_file),
-              title: const Text("Add File"),
-              onTap: () {
-                Navigator.pop(context);
-                _pickContent('File');
-              },
-            ),
-          ],
-        );
-      },
-    );
+  void _addYoutubeLink() {
+    if (_youtubeController.text.isNotEmpty) {
+      setState(() {
+        _youtubeLinks.add(_youtubeController.text);
+        _youtubeController.clear();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Content Management")),
-      body: _contentList.isEmpty
-          ? const Center(child: Text("No content added"))
-          : ListView.builder(
-              itemCount: _contentList.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    title: Text(_contentList[index]['type'] ?? ''),
-                    subtitle: Text(_contentList[index]['path'] ?? ''),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteContent(index),
+      appBar: AppBar(
+        title: const Text('Content Management'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _pickFile,
+                child: const Text('Pick File'),
+              ),
+              const SizedBox(height: 20),
+              _selectedFile != null
+                  ? Text('File selected: ${_selectedFile!.path.split('/').last}')
+                  : const Text('No file selected'),
+              const SizedBox(height: 20),
+              _selectedFile != null
+                  ? ElevatedButton(
+                      onPressed: () => _uploadFile(
+                          _selectedFile!, 'uploads/${DateTime.now()}'),
+                      child: const Text('Upload File'),
+                    )
+                  : Container(),
+              const SizedBox(height: 20),
+              _uploadedFileURL != null
+                  ? Text('Uploaded: $_uploadedFileURL')
+                  : Container(),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _youtubeController,
+                decoration: const InputDecoration(
+                  labelText: 'YouTube Video Link',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _addYoutubeLink,
+                child: const Text('Add YouTube Link'),
+              ),
+              const SizedBox(height: 20),
+              ..._youtubeLinks.map((link) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                content: AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: link.contains('youtube')
+                                      ? Image.network(
+                                          'https://img.youtube.com/vi/${Uri.parse(link).queryParameters['v']}/0.jpg',
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const Text('Invalid YouTube Link'),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            link,
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddOptions,
-        child: const Icon(Icons.add),
+                  )),
+            ],
+          ),
+        ),
       ),
     );
   }

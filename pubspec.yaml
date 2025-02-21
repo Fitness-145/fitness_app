@@ -36,6 +36,7 @@ dependencies:
 
   # File Management
   file_picker: ^6.1.1  # Use the latest version
+  shared_preferences: ^2.5.2
 
 # Dev dependencies (for testing and linting)
 dev_dependencies:
