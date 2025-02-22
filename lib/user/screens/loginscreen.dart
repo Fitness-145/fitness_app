@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/admin/admindashboard.dart';
+import 'package:fitness_app/trainer/trainerdashboard.dart';
 import 'package:fitness_app/user/screens/TrainerDashboard.dart';
 import 'package:fitness_app/user/screens/forgotpassword.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       else if (role == 'trainer') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const TrainerDashboard()),
+          MaterialPageRoute(builder: (context) => const FitPulseApp()),
         );
       }
        else {
