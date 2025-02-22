@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class ContentManagement extends StatefulWidget {
-  const ContentManagement({Key? key}) : super(key: key);
+  const ContentManagement({super.key});
 
   @override
   _ContentManagementState createState() => _ContentManagementState();
@@ -18,7 +18,7 @@ class _ContentManagementState extends State<ContentManagement> {
   File? _selectedFile;
   String? _uploadedFileURL;
   final TextEditingController _youtubeController = TextEditingController();
-  List<String> _youtubeLinks = [];
+  final List<String> _youtubeLinks = [];
 
   Future<void> _uploadFile(File file, String path) async {
     try {
@@ -28,7 +28,7 @@ class _ContentManagementState extends State<ContentManagement> {
         _uploadedFileURL = url;
       });
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('File Uploaded!')));
+          .showSnackBar(const SnackBar(content: Text('File Uploaded!')));
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Upload Failed: $e')));

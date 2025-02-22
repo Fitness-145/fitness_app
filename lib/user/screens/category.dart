@@ -21,7 +21,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
   final List<Map<String, dynamic>> interests = [
     {'interest': 'Gym', 'icon': Icons.fitness_center, 'selected': false},
     {'interest': 'Karate', 'icon': Icons.sports_kabaddi, 'selected': false},
-    {'interest': 'Martial Arts', 'icon': Icons.sports_mma, 'selected': false},
+    {'interest': 'Martial Arts', 'icon': Icons.sports_martial_arts, 'selected': false}, // Updated icon
     {'interest': 'Badminton', 'icon': Icons.sports_tennis, 'selected': false},
     {'interest': 'Shooting', 'icon': Icons.sports_esports, 'selected': false},
     {'interest': 'Boxing', 'icon': Icons.sports_mma, 'selected': false},
@@ -41,6 +41,13 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
     });
     if (isPaymentSuccessful) {
       print("Payment was successful in CustomizeInterestsScreen!");
+      // Navigate to MyPlanScreen if payment is successful
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyPlanScreen()),
+        );
+      });
     } else {
       print("Payment was not successful or not yet made in CustomizeInterestsScreen.");
     }
@@ -86,7 +93,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
         ),
       ),
       body: isPaymentSuccessful
-          ? MyPlanScreen() // Show MyPlanScreen if payment is successful
+          ? const MyPlanScreen() // Show MyPlanScreen if payment is successful
           : SizedBox(
               height: MediaQuery.of(context).size.height,
               child: Container(
@@ -220,26 +227,6 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onBottomNavTapped,
-        selectedItemColor: Colors.purple,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'My Plan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.run_circle),
-            label: 'Activities',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }

@@ -87,8 +87,9 @@ class _UserManagementState extends State<UserManagement> {
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection("users").snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData)
+                if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
 
                 List<QueryDocumentSnapshot> users = snapshot.data!.docs;
 
@@ -323,8 +324,8 @@ class _UserManagementState extends State<UserManagement> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.deepPurple),
-          focusedBorder: OutlineInputBorder(
+          labelStyle: const TextStyle(color: Colors.deepPurple),
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.deepPurple, width: 2),
           ),
           enabledBorder: OutlineInputBorder(

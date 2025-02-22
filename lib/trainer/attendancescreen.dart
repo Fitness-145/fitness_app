@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class AttendanceScreen extends StatefulWidget {
+  const AttendanceScreen({super.key});
+
   @override
   _AttendanceScreenState createState() => _AttendanceScreenState();
 }
@@ -21,11 +23,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future<void> _loadInitialAttendanceStatus() async {
     QuerySnapshot attendanceSnapshot = await _firestore.collection('attendance').get();
-    for (var doc in attendanceSnapshot.docs) {
-      String userId = doc['userId'];
-      _markedAttendance[userId] = true;
-    }
-    setState(() {});
+    attendanceSnapshot.docs.forEach((doc) {
+      _markedAttendance.add(doc['userId']);
+    });
+    setState(() {}); // Refresh UI to show initial marked status
   }
 
   Future<void> _loadAttendanceCounts() async {
@@ -47,16 +48,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     bool confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirm Attendance'),
-        content: Text('Are you sure you want to mark attendance for this user?'),
+        title: const Text('Confirm Attendance'),
+        content: const Text('Are you sure you want to mark attendance for this user?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Confirm'),
+            child: const Text('Confirm'),
           ),
         ],
       ),
@@ -121,12 +122,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Attendance')),
+      appBar: AppBar(title: const Text('Attendance')),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('users').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           var users = snapshot.data!.docs;
           return ListView.builder(
@@ -137,7 +138,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               bool isMarked = _markedAttendance.containsKey(userId) && _markedAttendance[userId]!;
 
               return Card(
-                margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 child: ListTile(
                   title: Text(user['name']),
                   subtitle: Column(
@@ -151,8 +152,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.undo, color: Colors.orange),
-                        onPressed: isMarked ? () => _removeLastAttendance(userId) : null,
+                        icon: Icon(Icons.undo, color: Colors.orange), // Undo icon
+                        onPressed: isMarked ? () => _removeLastAttendance(userId) : null, // Enable undo only if marked
                       ),
                       IconButton(
                         icon: Icon(

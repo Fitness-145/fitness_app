@@ -178,10 +178,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 15),
                     // Gender selection starts here
-                    Align(
+                    const Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0, bottom: 8.0),
+                        padding: EdgeInsets.only(left: 10.0, bottom: 8.0),
                         child: Text(
                           'Gender',
                           style: TextStyle(color: Colors.white70),
