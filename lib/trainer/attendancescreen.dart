@@ -173,3 +173,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 }
+
+extension on Map<String, bool> {
+  void add(doc) {}
+}
