@@ -9,8 +9,8 @@ class AttendanceScreen extends StatefulWidget {
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final Set<String> _markedAttendance = {}; // Track marked attendances
-  final Map<String, int> _attendanceCounts = {}; // Track attendance counts for each user
+  final Map<String, bool> _markedAttendance = {};
+  final Map<String, int> _attendanceCounts = {};
 
   @override
   void initState() {
@@ -20,16 +20,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Future<void> _loadInitialAttendanceStatus() async {
-    // Load already marked attendances to reflect correctly on UI restart
     QuerySnapshot attendanceSnapshot = await _firestore.collection('attendance').get();
-    attendanceSnapshot.docs.forEach((doc) {
-      _markedAttendance.add(doc['userId']);
-    });
-    setState(() {}); // Refresh UI to show initial marked status
+    for (var doc in attendanceSnapshot.docs) {
+      String userId = doc['userId'];
+      _markedAttendance[userId] = true;
+    }
+    setState(() {});
   }
 
   Future<void> _loadAttendanceCounts() async {
-    // Load attendance counts for each user
     QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
     for (var userDoc in usersSnapshot.docs) {
       String userId = userDoc.id;
@@ -39,13 +38,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           .get();
       _attendanceCounts[userId] = attendanceForUser.docs.length;
     }
-    setState(() {}); // Refresh UI to show attendance counts
+    setState(() {});
   }
 
   void _addAttendance(String userId) async {
-    if (_markedAttendance.contains(userId)) return;
+    if (_markedAttendance.containsKey(userId)) return;
 
-    // Show confirmation dialog
     bool confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -72,8 +70,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
 
     setState(() {
-      _markedAttendance.add(userId);
-      _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 0) + 1; // Increment count
+      _markedAttendance[userId] = true;
+      _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 0) + 1;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -82,14 +80,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   void _removeLastAttendance(String userId) async {
-    if (!_markedAttendance.contains(userId)) {
+    if (!_markedAttendance.containsKey(userId) || _attendanceCounts[userId] == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No attendance marked for user $userId to undo')),
       );
       return;
     }
 
-    // Find the last attendance record for this user and delete it
     QuerySnapshot attendanceSnapshot = await _firestore
         .collection('attendance')
         .where('userId', isEqualTo: userId)
@@ -103,8 +100,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       setState(() {
         _markedAttendance.remove(userId);
-        _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 1) - 1; // Decrement count
-         if (_attendanceCounts[userId]! < 0) _attendanceCounts[userId] = 0; // Ensure count doesn't go below zero
+        _attendanceCounts[userId] = _attendanceCounts[userId]! - 1;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +134,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             itemBuilder: (context, index) {
               var user = users[index];
               String userId = user.id;
-              bool isMarked = _markedAttendance.contains(userId);
+              bool isMarked = _markedAttendance.containsKey(userId) && _markedAttendance[userId]!;
 
               return Card(
                 margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -148,15 +144,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('User ID: $userId'),
-                      Text(_getAttendancePercentage(userId)), // Display attendance count
+                      Text(_getAttendancePercentage(userId)),
                     ],
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.undo, color: Colors.orange), // Undo icon
-                        onPressed: isMarked ? () => _removeLastAttendance(userId) : null, // Enable undo only if marked
+                        icon: Icon(Icons.undo, color: Colors.orange),
+                        onPressed: isMarked ? () => _removeLastAttendance(userId) : null,
                       ),
                       IconButton(
                         icon: Icon(

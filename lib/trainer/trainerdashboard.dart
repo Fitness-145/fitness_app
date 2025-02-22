@@ -1,4 +1,5 @@
 import 'package:fitness_app/trainer/attendancescreen.dart';
+import 'package:fitness_app/trainer/workout&diet.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -40,7 +41,7 @@ class TrainerDashboard extends StatelessWidget {
             _buildDashboardCard(
                 context, 'Attendance', Icons.calendar_today, Colors.orange, AttendanceScreen()),
             _buildDashboardCard(
-                context, 'Workout & Diet', Icons.fitness_center, Colors.green, null),
+                context, 'Workout & Diet', Icons.fitness_center, Colors.green, UserListScreen()),
             _buildDashboardCard(
                 context, 'Messages', Icons.message, Colors.blue, null),
           ],
