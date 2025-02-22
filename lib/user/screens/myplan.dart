@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class MyPlanScreen extends StatefulWidget {
-  const MyPlanScreen({Key? key}) : super(key: key);
+  const MyPlanScreen({super.key});
 
   @override
   _MyPlanScreenState createState() => _MyPlanScreenState();

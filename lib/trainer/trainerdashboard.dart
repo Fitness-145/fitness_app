@@ -6,7 +6,7 @@ void main() {
 }
 
 class FitPulseApp extends StatelessWidget {
-  const FitPulseApp({Key? key}) : super(key: key);
+  const FitPulseApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class FitPulseApp extends StatelessWidget {
 }
 
 class TrainerDashboard extends StatelessWidget {
-  const TrainerDashboard({Key? key}) : super(key: key);
+  const TrainerDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {

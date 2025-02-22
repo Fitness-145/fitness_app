@@ -86,7 +86,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
         ),
       ),
       body: isPaymentSuccessful
-          ? MyPlanScreen() // Show MyPlanScreen if payment is successful
+          ? const MyPlanScreen() // Show MyPlanScreen if payment is successful
           : SizedBox(
               height: MediaQuery.of(context).size.height,
               child: Container(

@@ -32,7 +32,7 @@ class _TrainerAttendanceState extends State<TrainerAttendance> {
 
       setState(() {
         trainees = traineeSnapshot.docs.map((doc) {
-          return doc.data() as Map<String, dynamic>; // Cast to Map<String, dynamic>
+          return doc.data(); // Cast to Map<String, dynamic>
         }).toList();
       });
     }

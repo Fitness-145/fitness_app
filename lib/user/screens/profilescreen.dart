@@ -199,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         await _auth.signOut();
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
                           (route) => false, // Clears navigation history
                         );
                       },
