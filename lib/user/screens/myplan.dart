@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:fitness_app/user/screens/profilescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyPlanScreen extends StatefulWidget {
   const MyPlanScreen({super.key});
@@ -21,6 +24,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
   final _bmiController = TextEditingController();
   final _fitnessGoalController = TextEditingController();
   final _fitnessTypeController = TextEditingController();
+  int _currentIndex = 0;
 
   @override
   void dispose() {
@@ -49,17 +53,23 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
         final data = json.decode(response.body);
         final prediction = data['prediction'] as String;
 
-        setState(() {
-          planDetails = prediction.split('\n').map((e) => e.trim()).toList();
-          isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            planDetails = prediction.split('\n').map((e) => e.trim()).toList();
+            isLoading = false;
+          });
+        }
       } else {
         debugPrint('Failed to load prediction: ${response.statusCode}');
-        setState(() => isLoading = false);
+        if (mounted) {
+          setState(() => isLoading = false);
+        }
       }
     } catch (e) {
       debugPrint('Error fetching prediction: $e');
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -122,6 +132,22 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     fetchPlanDetails(requestData);
   }
 
+  Future<void> _logout() async {
+    try {
+      // Sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+      
+      // Clear login data from local storage (SharedPreferences)
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Redirect to the login screen or any screen you wish
+      Navigator.pushReplacementNamed(context, '/login');
+    } catch (e) {
+      debugPrint('Error during logout: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +155,12 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
         title: const Text("My Plan"),
         centerTitle: true,
         backgroundColor: Colors.purple,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
@@ -146,6 +178,24 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
         onPressed: _showInputDialog,
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'My Plan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Activities',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 
@@ -162,4 +212,19 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
       ),
     );
   }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // Navigate to corresponding screens based on index
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProfileScreen()), // Navigate to ProfileScreen
+      );
+    }
+  }
 }
+
+ 

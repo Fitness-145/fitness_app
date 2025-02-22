@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/admin/admindashboard.dart';
 import 'package:fitness_app/trainer/trainerdashboard.dart';
+import 'package:fitness_app/user/screens/TrainerDashboard.dart';
 import 'package:fitness_app/user/screens/forgotpassword.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/category.dart';
@@ -108,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Icon(Icons.bolt, color: Colors.white, size: 80),
                     const SizedBox(height: 20),
                     const Text(
-                      'Welcome Back!',
+                      'Welcome !',
                       style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
