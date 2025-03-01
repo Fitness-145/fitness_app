@@ -1,12 +1,13 @@
 import 'dart:convert';
+import 'package:fitness_app/user/achievement.dart';
 import 'package:fitness_app/user/screens/gymactivity_screen.dart';
 import 'package:fitness_app/user/screens/profilescreen.dart';
-  // Import UserMessageScreen
 import 'package:fitness_app/user/user_message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+//import 'achievement_gallery.dart'; // Import the AchievementGallery screen
 
 class MyPlanScreen extends StatefulWidget {
   const MyPlanScreen({super.key});
@@ -28,6 +29,9 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
   final _fitnessGoalController = TextEditingController();
   final _fitnessTypeController = TextEditingController();
   int _currentIndex = 0;
+
+  // Key to control the drawer
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
@@ -139,7 +143,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     try {
       // Sign out from Firebase
       await FirebaseAuth.instance.signOut();
-      
+
       // Clear login data from local storage (SharedPreferences)
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.clear();
@@ -154,14 +158,27 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey, // Assign the key to the Scaffold
       appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0), // Added padding to better align the message icon
-          child: IconButton(
+        leading: IconButton(
+          icon: const Icon(Icons.menu, size: 28, color: Colors.white),
+          onPressed: () {
+            _scaffoldKey.currentState?.openDrawer(); // Open the drawer
+          },
+        ),
+        title: const Text(
+          "My Plan",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.purple,
+        elevation: 0,
+        actions: [
+          IconButton(
             icon: const Icon(
               Icons.message,
-              size: 28, // Increased the size of the icon
-              color: Colors.white, // Set icon color to white
+              size: 28,
+              color: Colors.white,
             ),
             onPressed: () {
               // Navigate to UserMessageScreen
@@ -171,14 +188,56 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
               );
             },
           ),
+        ],
+      ),
+      drawer: Drawer(
+        width: MediaQuery.of(context).size.width * 0.6, // Half-screen width
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.purple,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.emoji_events, color: Colors.purple),
+              title: const Text('Achievement Gallery'),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AchievementGallery()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.engineering, color: Colors.purple),
+              title: const Text('Service'),
+              onTap: () {
+                // Handle Service
+                Navigator.pop(context); // Close the drawer
+                // Add navigation logic here
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info, color: Colors.purple),
+              title: const Text('About'),
+              onTap: () {
+                // Handle About
+                Navigator.pop(context); // Close the drawer
+                // Add navigation logic here
+              },
+            ),
+          ],
         ),
-        title: const Text(
-          "My Plan",
-          style: TextStyle(color: Colors.white), // Set the title text color to white
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.purple,
-        elevation: 0, // Remove elevation for a cleaner look
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
@@ -239,33 +298,13 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ProfileScreen()), // Navigate to ProfileScreen
+        MaterialPageRoute(builder: (context) => const ProfileScreen()),
       );
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MyActivitiesPage()), // Navigate to MyActivitiesPage
+        MaterialPageRoute(builder: (context) => MyActivitiesPage()),
       );
     }
-  }
-}
-
-class ActivitiesScreen extends StatelessWidget {
-  const ActivitiesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Activities'),
-        backgroundColor: Colors.purple,
-      ),
-      body: const Center(
-        child: Text(
-          'This is the Activities Screen',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
-    );
   }
 }
