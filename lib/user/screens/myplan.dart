@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'package:fitness_app/user/screens/gymactivity_screen.dart';
 import 'package:fitness_app/user/screens/profilescreen.dart';
+  // Import UserMessageScreen
+import 'package:fitness_app/user/user_message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -152,15 +155,30 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Plan"),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0), // Added padding to better align the message icon
+          child: IconButton(
+            icon: const Icon(
+              Icons.message,
+              size: 28, // Increased the size of the icon
+              color: Colors.white, // Set icon color to white
+            ),
+            onPressed: () {
+              // Navigate to UserMessageScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const UserMessageScreen()),
+              );
+            },
+          ),
+        ),
+        title: const Text(
+          "My Plan",
+          style: TextStyle(color: Colors.white), // Set the title text color to white
+        ),
         centerTitle: true,
         backgroundColor: Colors.purple,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
+        elevation: 0, // Remove elevation for a cleaner look
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
@@ -223,8 +241,31 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
         context,
         MaterialPageRoute(builder: (context) => const ProfileScreen()), // Navigate to ProfileScreen
       );
+    } else if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MyActivitiesPage()), // Navigate to MyActivitiesPage
+      );
     }
   }
 }
 
- 
+class ActivitiesScreen extends StatelessWidget {
+  const ActivitiesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Activities'),
+        backgroundColor: Colors.purple,
+      ),
+      body: const Center(
+        child: Text(
+          'This is the Activities Screen',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}

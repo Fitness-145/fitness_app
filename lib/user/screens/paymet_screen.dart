@@ -1,4 +1,5 @@
-import 'package:fitness_app/user/screens/cardpayment.dart';
+ 
+import 'package:fitness_app/user/cardpayment.dart';
 import 'package:flutter/material.dart';
 import 'upi.dart'; // Ensure the correct import for UpiPaymentScreen
 // Assuming you have this file for CardPaymentScreen

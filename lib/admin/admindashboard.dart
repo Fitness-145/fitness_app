@@ -1,8 +1,8 @@
+import 'package:fitness_app/admin/adminmessages.dart';
 import 'package:fitness_app/admin/usermanage.dart';
 import 'package:flutter/material.dart';
 import 'ContentManagement.dart';
 import 'subscription_tracking.dart';
-import 'reports_analytics.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -24,17 +24,23 @@ class AdminDashboard extends StatelessWidget {
             mainAxisSpacing: 12,
           ),
           children: [
-            _buildCard(context, "User Management", Icons.person,
-                const UserManagement()),
+            _buildCard(
+                context, "User Management", Icons.person, const UserManagement()),
             _buildCard(
                 context,
                 "Content Management",
-                Icons.library_books, // Changed Icon
-                const ContentManagement()), // Changed Title
-            _buildCard(context, "Subscription Tracking", Icons.payment,
+                Icons.library_books,
+                const ContentManagement()),
+            _buildCard(
+                context,
+                "Subscription Tracking",
+                Icons.payment,
                 const SubscriptionTracking()),
-            _buildCard(context, "Reports & Analytics", Icons.analytics,
-                const ReportsAnalytics()),
+            _buildCard(
+                context,
+                "Messages",
+                Icons.message,
+                const AdminMessageScreen()), // Updated to Messages
           ],
         ),
       ),
@@ -49,15 +55,10 @@ class AdminDashboard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
         onTap: () {
+          // Navigate to the specified route
           Navigator.push(
             context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => route,
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-            ),
+            MaterialPageRoute(builder: (context) => route),
           );
         },
         child: Column(

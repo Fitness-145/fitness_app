@@ -1,135 +1,100 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
-class GoalsScreen extends StatefulWidget {
-  const GoalsScreen({super.key});
+class MyActivitiesPage extends StatefulWidget {
+  const MyActivitiesPage({super.key});
 
   @override
-  _GoalsScreenState createState() => _GoalsScreenState();
+  _MyActivitiesPageState createState() => _MyActivitiesPageState();
 }
 
-class _GoalsScreenState extends State<GoalsScreen> {
-  // List to keep track of selected options
-  List<String> selectedOptions = [];
+class _MyActivitiesPageState extends State<MyActivitiesPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late Stream<QuerySnapshot> activitiesStream;
 
-  // List of options to display
-  final List<String> options = [
-    'Weight loss',
-    'Weight gain',
-    'Improve overall fitness',
-  ];
-
-  void toggleSelection(String option) {
-    setState(() {
-      if (selectedOptions.contains(option)) {
-        selectedOptions.remove(option);
-      } else {
-        selectedOptions.add(option);
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    
+    // Set up stream to listen for updates from Firebase Firestore
+    activitiesStream = _firestore
+        .collection('users')
+        .doc(_auth.currentUser!.uid)
+        .collection('myPlans')
+        .snapshots();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
-        ),
+        title: const Text("My Activities Progress"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Logo at the top
-            Container(
-              margin: const EdgeInsets.only(top: 20, bottom: 20),
-              child: const Icon(Icons.show_chart, color: Colors.purple, size: 50),
-            ),
-            // Heading text
-            const Text(
-              'Let us know how we can help you',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'You always can change this later',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            // Options list
-            Column(
-              children: options.map((option) {
-                return GestureDetector(
-                  onTap: () => toggleSelection(option),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: selectedOptions.contains(option)
-                            ? Colors.purple
-                            : Colors.grey[300]!,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          option,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: activitiesStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No activities found."));
+          }
+
+          var activities = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: activities.length,
+            itemBuilder: (context, index) {
+              var activity = activities[index];
+              double progress = activity['progress'].toDouble();
+              double target = activity['target'].toDouble();
+              double progressPercentage = (progress / target) * 100;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        activity['activityName'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        if (selectedOptions.contains(option))
-                          const Icon(Icons.check_circle, color: Colors.purple),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text(
+                            "Progress: ${progress.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}",
+                          ),
+                          const Spacer(),
+                          Text("${progressPercentage.toStringAsFixed(0)}%"),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      LinearProgressIndicator(
+                        value: progressPercentage / 100,
+                        color: Colors.blue,
+                        backgroundColor: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 15),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
-            const Spacer(),
-            // Continue button
-            ElevatedButton(
-              onPressed: () {
-                // Action when continue button is pressed
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-              ),
-              child: const Text(
-                'Continue',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
