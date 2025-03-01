@@ -13,7 +13,7 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _messageController = TextEditingController();
-  String _selectedRecipient = 'admin'; // Default recipient (admin)
+  final String adminId = 'admin'; // Standard admin identifier
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Messages"),
+        title: const Text("Chat with Admin"),
         backgroundColor: Colors.deepPurple,
       ),
       body: Column(
@@ -32,8 +32,11 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection('user_messages')
-                  .where('receiverId', isEqualTo: 'admin_id') // Messages sent to admin
-                  .orderBy('timestamp', descending: true)
+                  .where(Filter.or(
+                    Filter('senderId', isEqualTo: userId),
+                    Filter('receiverId', isEqualTo: userId),
+                  ))
+                  .orderBy('timestamp', descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -43,6 +46,7 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
                 var messages = snapshot.data!.docs;
 
                 return ListView.builder(
+                  padding: const EdgeInsets.all(10),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     var message = messages[index];
@@ -50,24 +54,27 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
 
                     bool isSentByUser = messageData['senderId'] == userId;
                     String senderName = messageData['senderName'];
-                    String senderRole = messageData['senderRole'];
+                    String messageText = messageData['message'];
+                    Timestamp timestamp = messageData['timestamp'];
+                    DateTime messageTime = timestamp.toDate();
+                    String formattedTime =
+                        "${messageTime.hour}:${messageTime.minute}";
 
                     return Align(
-                      alignment: isSentByUser
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
+                      alignment:
+                          isSentByUser ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: const EdgeInsets.all(8.0),
-                        padding: const EdgeInsets.all(12.0),
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isSentByUser ? Colors.deepPurple : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isSentByUser ? "You" : "$senderName ($senderRole)",
+                              isSentByUser ? "You" : senderName,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isSentByUser ? Colors.white : Colors.black,
@@ -75,9 +82,20 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              messageData['message'],
+                              messageText,
                               style: TextStyle(
                                 color: isSentByUser ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Text(
+                                formattedTime,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isSentByUser ? Colors.white70 : Colors.black54,
+                                ),
                               ),
                             ),
                           ],
@@ -89,6 +107,8 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
               },
             ),
           ),
+
+          // Input box for sending messages
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -96,24 +116,14 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: "Type your message...",
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: _selectedRecipient,
-                  items: const [
-                    DropdownMenuItem(value: 'admin', child: Text("Admin")),
-                    DropdownMenuItem(value: 'trainer', child: Text("Trainer")),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedRecipient = value!;
-                    });
-                  },
                 ),
                 const SizedBox(width: 8),
                 IconButton(
@@ -128,21 +138,25 @@ class _UserMessageScreenState extends State<UserMessageScreen> {
     );
   }
 
-  void _sendMessage(String? userId, String userName) async {
+  // Method to send a message
+  Future<void> _sendMessage(String? userId, String userName) async {
     if (_messageController.text.isEmpty || userId == null) return;
 
-    String receiverId = 'admin_id'; // Admin's user ID
+    try {
+      await _firestore.collection('user_messages').add({
+        'senderId': userId,
+        'senderName': userName,
+        'receiverId': adminId, // Sending to admin
+        'receiverName': 'Admin',
+        'message': _messageController.text,
+        'timestamp': Timestamp.now(),
+      });
 
-    await _firestore.collection('user_messages').add({
-      'senderId': userId,
-      'senderName': userName,
-      'senderRole': 'user',
-      'receiverId': receiverId,
-      'receiverName': 'Admin',
-      'message': _messageController.text,
-      'timestamp': Timestamp.now(),
-    });
-
-    _messageController.clear();
+      _messageController.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending message: $e')),
+      );
+    }
   }
 }

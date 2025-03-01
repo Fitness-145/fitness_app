@@ -303,7 +303,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MyActivitiesPage()),
+        MaterialPageRoute(builder: (context) => const MyActivitiesPage()),
       );
     }
   }

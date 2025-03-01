@@ -13,8 +13,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _messageController = TextEditingController();
-  String _selectedRecipient = 'all'; // Default recipient (All users)
-  bool _isSendingMessage = false; // Show a loading indicator when sending messages
+  final bool _isSendingMessage = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +28,10 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
       ),
       body: Column(
         children: [
-          // Message list display
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection('user_messages')
-                  .where('receiverId', isEqualTo: adminId) // Messages from users to admin
                   .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -50,117 +47,28 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
                     var message = messages[index];
                     var messageData = message.data() as Map<String, dynamic>;
 
-                    bool isSentByAdmin = messageData['senderId'] == adminId;
-                    String senderName = messageData['senderName'];
-                    String senderRole = messageData['senderRole'];
+                    String senderId = messageData['senderId'];
+                    String senderName = messageData['senderName'] ?? "Unknown";
+                    String messageText = messageData['message'];
                     Timestamp timestamp = messageData['timestamp'];
                     DateTime messageTime = timestamp.toDate();
-                    String formattedTime =
-                        "${messageTime.hour}:${messageTime.minute}";
+                    String formattedTime = "${messageTime.hour}:${messageTime.minute}";
 
-                    return Align(
-                      alignment: isSentByAdmin
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 12.0),
-                        padding: const EdgeInsets.all(12.0),
-                        decoration: BoxDecoration(
-                          color: isSentByAdmin
-                              ? Colors.deepPurple
-                              : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isSentByAdmin
-                                  ? "You"
-                                  : "$senderName ($senderRole)",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: isSentByAdmin
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              messageData['message'],
-                              style: TextStyle(
-                                color: isSentByAdmin
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              formattedTime,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isSentByAdmin
-                                    ? Colors.white70
-                                    : Colors.black45,
-                              ),
-                            ),
-                          ],
-                        ),
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        child: Text(senderName[0].toUpperCase(),
+                            style: const TextStyle(color: Colors.white)),
                       ),
+                      title: Text(senderName,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(messageText),
+                      trailing: Text(formattedTime, style: const TextStyle(fontSize: 12)),
+                      onTap: () => _showReplyDialog(senderId, senderName),
                     );
                   },
                 );
               },
-            ),
-          ),
-
-          // Message input area
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: "Type your message...",
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Recipient Dropdown
-                DropdownButton<String>(
-                  value: _selectedRecipient,
-                  items: const [
-                    DropdownMenuItem(value: 'all', child: Text("All Users")),
-                    DropdownMenuItem(value: 'user_id', child: Text("Specific User")),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedRecipient = value!;
-                    });
-                  },
-                ),
-                const SizedBox(width: 8),
-                // Send button
-                IconButton(
-                  icon: _isSendingMessage
-                      ? const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                          strokeWidth: 2,
-                        )
-                      : const Icon(Icons.send, color: Colors.deepPurple),
-                  onPressed: _isSendingMessage
-                      ? null // Disable button while sending
-                      : () => _sendMessage(adminId, adminName),
-                ),
-              ],
             ),
           ),
         ],
@@ -168,56 +76,70 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
     );
   }
 
-  // Method to send a message
-  Future<void> _sendMessage(String? adminId, String adminName) async {
-    if (_messageController.text.isEmpty || adminId == null) return;
+  /// Opens a dialog box to reply to the selected user's message
+  void _showReplyDialog(String userId, String userName) {
+    TextEditingController replyController = TextEditingController();
 
-    setState(() {
-      _isSendingMessage = true; // Show loading indicator
-    });
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Reply to $userName"),
+          content: TextField(
+            controller: replyController,
+            decoration: const InputDecoration(hintText: "Type your reply..."),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _sendReply(userId, userName, replyController.text);
+                Navigator.pop(context);
+              },
+              child: const Text("Send"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    String receiverId = _selectedRecipient == 'all'
-        ? 'all_users' // Broadcast to all users
-        : _selectedRecipient; // Send to a specific user
+  /// Sends a reply and stores it in Firebase for users to fetch
+  Future<void> _sendReply(String userId, String userName, String message) async {
+    if (message.isEmpty) return;
 
-    String receiverName = _selectedRecipient == 'all' ? "All Users" : "User";
+    final admin = _auth.currentUser;
+    final adminId = admin?.uid;
+    final adminName = admin?.displayName ?? "Admin";
 
     try {
-      // Add message to Firestore
       await _firestore.collection('admin_messages').add({
         'senderId': adminId,
         'senderName': adminName,
         'senderRole': 'admin',
-        'receiverId': receiverId,
-        'receiverName': receiverName,
-        'message': _messageController.text,
+        'receiverId': userId,
+        'receiverName': userName,
+        'message': message,
         'timestamp': Timestamp.now(),
       });
 
-      // Add a separate collection for broadcasting to all users
-      if (_selectedRecipient == 'all') {
-        await _firestore.collection('user_messages').add({
-          'senderId': adminId,
-          'senderName': adminName,
-          'senderRole': 'admin',
-          'receiverId': 'all_users', // This is for all users
-          'receiverName': 'All Users',
-          'message': _messageController.text,
-          'timestamp': Timestamp.now(),
-        });
-      }
-
-      // Clear the message input after sending
-      _messageController.clear();
-    } catch (e) {
-      // Show error message if something goes wrong
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sending message: $e')),
-      );
-    } finally {
-      setState(() {
-        _isSendingMessage = false; // Hide loading indicator
+      // Also store in user_messages for the user to fetch
+      await _firestore.collection('user_messages').add({
+        'senderId': adminId,
+        'senderName': adminName,
+        'senderRole': 'admin',
+        'receiverId': userId,
+        'receiverName': userName,
+        'message': message,
+        'timestamp': Timestamp.now(),
       });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending reply: $e')),
+      );
     }
   }
 }
