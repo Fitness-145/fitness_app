@@ -9,7 +9,7 @@ class UserManagement extends StatefulWidget {
 }
 
 class _UserManagementState extends State<UserManagement> {
-  String selectedRole = "User"; // ✅ Default role filter
+  String selectedRole = "User"; // Default role filter
   String selectedSort = "Date";
   String searchQuery = "";
   Set<String> selectedUsers = {};
@@ -93,7 +93,7 @@ class _UserManagementState extends State<UserManagement> {
 
                 List<QueryDocumentSnapshot> users = snapshot.data!.docs;
 
-                // ✅ Default role filter set to "User"
+                // Apply role filter
                 if (selectedRole != "All Users") {
                   users = users
                       .where(
@@ -123,57 +123,76 @@ class _UserManagementState extends State<UserManagement> {
                     var user = users[index];
                     bool isSelected = selectedUsers.contains(user.id);
 
-                    return GestureDetector(
-                      onLongPress: () {
-                        setState(() {
-                          if (isSelected) {
-                            selectedUsers.remove(user.id);
-                          } else {
-                            selectedUsers.add(user.id);
-                          }
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.grey[300] : Colors.white,
-                          border:
-                              Border.all(color: Colors.deepPurple, width: 1.5),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
+                    return FutureBuilder<int>(
+                      future: _getUserAttendanceCount(user.id), // Fetch attendance count
+                      builder: (context, attendanceSnapshot) {
+                        if (attendanceSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        int attendanceCount = attendanceSnapshot.data ?? 0;
+
+                        return GestureDetector(
+                          onLongPress: () {
+                            setState(() {
+                              if (isSelected) {
+                                selectedUsers.remove(user.id);
+                              } else {
+                                selectedUsers.add(user.id);
+                              }
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.grey[300] : Colors.white,
+                              border: Border.all(
+                                  color: Colors.deepPurple, width: 1.5),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            user['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                              "Email: ${user['email']} | Role: ${user['role']}"),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () =>
-                                    _showUserDetails(context, user, user.id),
+                            child: ListTile(
+                              title: Text(
+                                user['name'],
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteUser(user.id),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      "Email: ${user['email']} | Role: ${user['role']}"),
+                                  Text("Attendance Count: $attendanceCount"),
+                                ],
                               ),
-                            ],
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    onPressed: () => _showUserDetails(
+                                        context, user, user.id),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () => _deleteUser(user.id),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
                   },
                 );
@@ -199,6 +218,20 @@ class _UserManagementState extends State<UserManagement> {
     );
   }
 
+  Future<int> _getUserAttendanceCount(String userId) async {
+    try {
+      final attendanceSnapshot = await _firestore
+          .collection('attendance_records')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      return attendanceSnapshot.docs.length;
+    } catch (error) {
+      print('Error fetching attendance count: $error');
+      return 0;
+    }
+  }
+
   void _showUserDetails(
       BuildContext context, QueryDocumentSnapshot? user, String? userId) {
     final formKey = GlobalKey<FormState>();
@@ -213,10 +246,9 @@ class _UserManagementState extends State<UserManagement> {
         TextEditingController(text: user?['age']?.toString() ?? '');
     TextEditingController heightController =
         TextEditingController(text: user?['height']?.toString() ?? '');
-    TextEditingController passwordController = // Added password controller
-        TextEditingController();
+    TextEditingController passwordController = TextEditingController();
 
-    String role = user?['role'] ?? 'user'; // Default role to 'user' for new users or existing users without role
+    String role = user?['role'] ?? 'user';
 
     showDialog(
       context: context,
@@ -253,7 +285,6 @@ class _UserManagementState extends State<UserManagement> {
                     (value) => int.tryParse(value!) != null
                         ? null
                         : "Enter a valid height"),
-                // ✅ Role Dropdown
                 DropdownButtonFormField<String>(
                   value: role,
                   decoration: const InputDecoration(
@@ -272,7 +303,7 @@ class _UserManagementState extends State<UserManagement> {
                   validator: (value) =>
                       value == null ? 'Please select a role' : null,
                 ),
-                if (user == null) // ✅ Show password field only for new users
+                if (user == null)
                   _buildTextField(
                       passwordController,
                       "Password",
@@ -297,8 +328,8 @@ class _UserManagementState extends State<UserManagement> {
                     "role": role.toLowerCase(),
                     "created_at": Timestamp.now(),
                   };
-                  if (user == null) { // Add password only for new users
-                    userData['password'] = passwordController.text; // ⚠️ Insecure in real production - storing plain text passwords!
+                  if (user == null) {
+                    userData['password'] = passwordController.text;
                   }
 
                   _firestore
