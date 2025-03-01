@@ -14,6 +14,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _messageController = TextEditingController();
   String _selectedRecipient = 'all'; // Default recipient (All users)
+  bool _isSendingMessage = false; // Show a loading indicator when sending messages
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +34,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection('user_messages')
-                  .where('receiverId', isEqualTo: 'admin_id') // Messages from users to admin
+                  .where('receiverId', isEqualTo: adminId) // Messages from users to admin
                   .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -49,7 +50,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
                     var message = messages[index];
                     var messageData = message.data() as Map<String, dynamic>;
 
-                    bool isSentByAdmin = messageData['senderId'] == 'admin_id';
+                    bool isSentByAdmin = messageData['senderId'] == adminId;
                     String senderName = messageData['senderName'];
                     String senderRole = messageData['senderRole'];
                     Timestamp timestamp = messageData['timestamp'];
@@ -149,8 +150,15 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
                 const SizedBox(width: 8),
                 // Send button
                 IconButton(
-                  icon: const Icon(Icons.send, color: Colors.deepPurple),
-                  onPressed: () => _sendMessage(adminId, adminName),
+                  icon: _isSendingMessage
+                      ? const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                          strokeWidth: 2,
+                        )
+                      : const Icon(Icons.send, color: Colors.deepPurple),
+                  onPressed: _isSendingMessage
+                      ? null // Disable button while sending
+                      : () => _sendMessage(adminId, adminName),
                 ),
               ],
             ),
@@ -161,8 +169,12 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
   }
 
   // Method to send a message
-  void _sendMessage(String? adminId, String adminName) async {
+  Future<void> _sendMessage(String? adminId, String adminName) async {
     if (_messageController.text.isEmpty || adminId == null) return;
+
+    setState(() {
+      _isSendingMessage = true; // Show loading indicator
+    });
 
     String receiverId = _selectedRecipient == 'all'
         ? 'all_users' // Broadcast to all users
@@ -170,31 +182,42 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
 
     String receiverName = _selectedRecipient == 'all' ? "All Users" : "User";
 
-    // Add message to Firestore
-    await _firestore.collection('admin_messages').add({
-      'senderId': adminId,
-      'senderName': adminName,
-      'senderRole': 'admin',
-      'receiverId': receiverId,
-      'receiverName': receiverName,
-      'message': _messageController.text,
-      'timestamp': Timestamp.now(),
-    });
-
-    // Add a separate collection for broadcasting to all users
-    if (_selectedRecipient == 'all') {
-      await _firestore.collection('user_messages').add({
+    try {
+      // Add message to Firestore
+      await _firestore.collection('admin_messages').add({
         'senderId': adminId,
         'senderName': adminName,
         'senderRole': 'admin',
-        'receiverId': 'all_users', // This is for all users
-        'receiverName': 'All Users',
+        'receiverId': receiverId,
+        'receiverName': receiverName,
         'message': _messageController.text,
         'timestamp': Timestamp.now(),
       });
-    }
 
-    // Clear the message input after sending
-    _messageController.clear();
+      // Add a separate collection for broadcasting to all users
+      if (_selectedRecipient == 'all') {
+        await _firestore.collection('user_messages').add({
+          'senderId': adminId,
+          'senderName': adminName,
+          'senderRole': 'admin',
+          'receiverId': 'all_users', // This is for all users
+          'receiverName': 'All Users',
+          'message': _messageController.text,
+          'timestamp': Timestamp.now(),
+        });
+      }
+
+      // Clear the message input after sending
+      _messageController.clear();
+    } catch (e) {
+      // Show error message if something goes wrong
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending message: $e')),
+      );
+    } finally {
+      setState(() {
+        _isSendingMessage = false; // Hide loading indicator
+      });
+    }
   }
 }
