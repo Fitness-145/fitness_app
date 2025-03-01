@@ -1,4 +1,4 @@
-import 'package:fitness_app/trainer/attendancescreen.dart';
+import 'package:fitness_app/trainer/trainer_attendance.dart';
 import 'package:fitness_app/trainer/workout&diet.dart';
 import 'package:flutter/material.dart';
 
@@ -38,10 +38,10 @@ class TrainerDashboard extends StatelessWidget {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
           children: [
-            _buildDashboardCard(
-                context, 'Attendance', Icons.calendar_today, Colors.orange, const AttendanceScreen()),
-            _buildDashboardCard(
-                context, 'Workout & Diet', Icons.fitness_center, Colors.green, const UserListScreen()),
+            _buildDashboardCard(context, 'Attendance', Icons.calendar_today,
+                Colors.orange, const AttendanceScreen()),
+            _buildDashboardCard(context, 'Workout & Diet', Icons.fitness_center,
+                Colors.green, const UserListScreen()),
             _buildDashboardCard(
                 context, 'Messages', Icons.message, Colors.blue, null),
           ],
@@ -50,7 +50,8 @@ class TrainerDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildDashboardCard(BuildContext context, String title, IconData icon, Color color, Widget? screen) {
+  Widget _buildDashboardCard(BuildContext context, String title, IconData icon,
+      Color color, Widget? screen) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -72,11 +73,12 @@ class TrainerDashboard extends StatelessWidget {
           children: [
             Icon(icon, size: 48, color: color),
             const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
 }
-
