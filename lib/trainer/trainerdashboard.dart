@@ -39,9 +39,9 @@ class TrainerDashboard extends StatelessWidget {
           mainAxisSpacing: 16,
           children: [
             _buildDashboardCard(
-                context, 'Attendance', Icons.calendar_today, Colors.orange, AttendanceScreen()),
+                context, 'Attendance', Icons.calendar_today, Colors.orange, const AttendanceScreen()),
             _buildDashboardCard(
-                context, 'Workout & Diet', Icons.fitness_center, Colors.green, UserListScreen()),
+                context, 'Workout & Diet', Icons.fitness_center, Colors.green, const UserListScreen()),
             _buildDashboardCard(
                 context, 'Messages', Icons.message, Colors.blue, null),
           ],

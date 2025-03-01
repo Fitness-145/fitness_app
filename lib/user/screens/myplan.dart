@@ -221,7 +221,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ProfileScreen()), // Navigate to ProfileScreen
+        MaterialPageRoute(builder: (context) => const ProfileScreen()), // Navigate to ProfileScreen
       );
     }
   }

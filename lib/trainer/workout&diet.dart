@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class UserListScreen extends StatefulWidget {
-  const UserListScreen({Key? key}) : super(key: key);
+  const UserListScreen({super.key});
 
   @override
   _UserListScreenState createState() => _UserListScreenState();

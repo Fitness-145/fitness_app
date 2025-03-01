@@ -122,7 +122,7 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
             const SizedBox(height: 10),
             TextField(
               controller: _caloriesController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: 'Calories Burned',
               ),
@@ -138,7 +138,7 @@ class _MyActivitiesScreenState extends State<MyActivitiesScreen> {
             // Display Logged Activities
             ListView.builder(
               shrinkWrap: true,  // To make it take only the required space
-              physics: NeverScrollableScrollPhysics(),  // Prevent scrolling within ListView
+              physics: const NeverScrollableScrollPhysics(),  // Prevent scrolling within ListView
               itemCount: activities.length,
               itemBuilder: (context, index) {
                 return Card(
