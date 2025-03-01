@@ -12,6 +12,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Map<String, bool> _markedAttendance = {};
   final Map<String, int> _attendanceCounts = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
 
   @override
   void initState() {
@@ -25,7 +27,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     for (var doc in attendanceSnapshot.docs) {
       _markedAttendance[doc['userId']] = true;
     }
-    setState(() {}); // Refresh UI to show initial marked status
+    setState(() {});
   }
 
   Future<void> _loadAttendanceCounts() async {
@@ -42,7 +44,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   void _addAttendance(String userId) async {
-    if (_markedAttendance.containsKey(userId) && _markedAttendance[userId] == true) return;
+    if (_markedAttendance[userId] == true) return;
 
     bool confirm = await showDialog(
       context: context,
@@ -73,19 +75,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       _markedAttendance[userId] = true;
       _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 0) + 1;
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Attendance added for user $userId')),
-    );
   }
 
   void _removeLastAttendance(String userId) async {
-    if (_attendanceCounts[userId] == null || _attendanceCounts[userId] == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No attendance marked for user $userId to undo')),
-      );
-      return;
-    }
+    if (_attendanceCounts[userId] == null || _attendanceCounts[userId] == 0) return;
 
     QuerySnapshot attendanceSnapshot = await _firestore
         .collection('attendance')
@@ -100,74 +93,92 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       setState(() {
         _attendanceCounts[userId] = _attendanceCounts[userId]! - 1;
-        _markedAttendance[userId] = _attendanceCounts[userId]! > 0; // Update status correctly
+        _markedAttendance[userId] = _attendanceCounts[userId]! > 0;
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Attendance undone for user $userId')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No attendance record found to undo for user $userId')),
-      );
     }
   }
 
-  String _getAttendancePercentage(String userId) {
-    int count = _attendanceCounts[userId] ?? 0;
-    return 'Attendance Count: $count';
+  String _getAttendanceCount(String userId) {
+    return 'Attendance Count: ${_attendanceCounts[userId] ?? 0}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Attendance')),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('users').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          var users = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              var user = users[index];
-              String userId = user.id;
-              bool isMarked = _markedAttendance[userId] ?? false;
-
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                child: ListTile(
-                  title: Text(user['name']),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('User ID: $userId'),
-                      Text(_getAttendancePercentage(userId)),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.undo, color: Colors.orange),
-                        onPressed: isMarked ? () => _removeLastAttendance(userId) : null,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          isMarked ? Icons.check : Icons.add,
-                          color: isMarked ? Colors.grey : Colors.green,
-                        ),
-                        onPressed: () => _addAttendance(userId), // Now allows re-entering attendance
-                      ),
-                    ],
-                  ),
+      appBar: AppBar(
+        title: const Text('Attendance'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search user...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
-              );
-            },
-          );
-        },
+              ),
+              onChanged: (query) {
+                setState(() {
+                  _searchQuery = query.toLowerCase();
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('users').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                var users = snapshot.data!.docs.where((user) {
+                  return user['name'].toString().toLowerCase().contains(_searchQuery);
+                }).toList();
+                return ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    var user = users[index];
+                    String userId = user.id;
+                    bool isMarked = _markedAttendance[userId] ?? false;
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      child: ListTile(
+                        title: Text(user['name']),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('User ID: $userId'),
+                            Text(_getAttendanceCount(userId)),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.undo, color: Colors.orange),
+                              onPressed: isMarked ? () => _removeLastAttendance(userId) : null,
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                isMarked ? Icons.check : Icons.add,
+                                color: isMarked ? Colors.grey : Colors.green,
+                              ),
+                              onPressed: () => _addAttendance(userId),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
