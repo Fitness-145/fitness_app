@@ -61,15 +61,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<String?> _getRoleFromFirestore(String email) async {
     // Check users collection
-    var userQuery = await _firestore.collection('users').where('email', isEqualTo: email).limit(1).get();
+    var userQuery = await _firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
     if (userQuery.docs.isNotEmpty) return 'user';
 
     // Check trainers collection
-    var trainerQuery = await _firestore.collection('trainer').where('email', isEqualTo: email).limit(1).get();
+    var trainerQuery = await _firestore
+        .collection('trainer')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
     if (trainerQuery.docs.isNotEmpty) return 'trainer';
 
     // Check admins collection
-    var adminQuery = await _firestore.collection('admin').where('email', isEqualTo: email).limit(1).get();
+    var adminQuery = await _firestore
+        .collection('admin')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
     if (adminQuery.docs.isNotEmpty) return 'admin';
 
     return null;
@@ -148,23 +160,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 40),
                     const Icon(Icons.bolt, color: Colors.white, size: 80),
                     const SizedBox(height: 20),
-                    _buildTextField(_emailController, Icons.person, 'Email Address', _validateEmail),
+                    _buildTextField(_emailController, Icons.person,
+                        'Email Address', _validateEmail),
                     const SizedBox(height: 20),
-                    _buildTextField(_passwordController, Icons.lock, 'Password', _validatePassword, obscureText: !_isPasswordVisible, suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white),
-                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                    )),
+                    _buildTextField(_passwordController, Icons.lock, 'Password',
+                        _validatePassword,
+                        obscureText: !_isPasswordVisible,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.white),
+                          onPressed: () => setState(
+                              () => _isPasswordVisible = !_isPasswordVisible),
+                        )),
                     const SizedBox(height: 10),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const ForgotPasswordScreen()),
                         ),
-                        child: const Text('Forgot Password?', style: TextStyle(color: Colors.white)),
+                        child: const Text('Forgot Password?',
+                            style: TextStyle(color: Colors.white)),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -172,11 +194,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 120, vertical: 15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 120, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30)),
                         minimumSize: const Size(200, 50),
                       ),
-                      child: const Text('Continue', style: TextStyle(color: Colors.purple, fontSize: 16)),
+                      child: const Text('Continue',
+                          style: TextStyle(color: Colors.purple, fontSize: 16)),
+                    ),
+                    const SizedBox(height: 20),
+                    // Sign up link
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignupScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Don't have an account? Sign up",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     const SizedBox(height: 40),
                   ],
