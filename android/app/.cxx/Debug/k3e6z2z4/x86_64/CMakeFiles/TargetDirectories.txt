@@ -1,0 +1,2 @@
+D:/fitnessapp/fitness_app/android/app/.cxx/Debug/k3e6z2z4/x86_64/CMakeFiles/edit_cache.dir
+D:/fitnessapp/fitness_app/android/app/.cxx/Debug/k3e6z2z4/x86_64/CMakeFiles/rebuild_cache.dir

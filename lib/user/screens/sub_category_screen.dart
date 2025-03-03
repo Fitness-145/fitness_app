@@ -90,6 +90,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         'totalFee': totalFee,
         'selectedSubcategories': selectedSubcategories,
         'selectedTimes': selectedTimes,
+        'issubscribed': true,
         'timestamp': FieldValue.serverTimestamp(),
       };
 

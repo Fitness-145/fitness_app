@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AchievementGallery extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  const AchievementGallery({super.key});
+   AchievementGallery({super.key});
 
   @override
   Widget build(BuildContext context) {

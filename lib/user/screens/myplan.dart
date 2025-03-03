@@ -118,7 +118,8 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isNumber = false}) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool isNumber = false}) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(labelText: label),
@@ -184,7 +185,8 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
               // Navigate to UserMessageScreen
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const UserMessageScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const UserMessageScreen()),
               );
             },
           ),
@@ -214,7 +216,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
                 Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AchievementGallery()),
+                  MaterialPageRoute(builder: (context) => AchievementGallery()),
                 );
               },
             ),
