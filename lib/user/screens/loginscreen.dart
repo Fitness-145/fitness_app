@@ -6,6 +6,7 @@ import 'package:fitness_app/user/screens/forgotpassword.dart';
 import 'package:fitness_app/user/screens/category.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,6 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         return;
       }
+
+      // Save role data in SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userRole', role); // Save user role
 
       // Navigate based on the user's role
       _navigateToDashboard(role);
@@ -175,6 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () => setState(
                               () => _isPasswordVisible = !_isPasswordVisible),
                         )),
+
                     const SizedBox(height: 10),
                     Align(
                       alignment: Alignment.centerRight,
