@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/admin/admindashboard.dart';
 import 'package:fitness_app/trainer/trainerdashboard.dart';
 import 'package:fitness_app/user/screens/forgotpassword.dart';
-import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/category.dart';
+import 'package:flutter/material.dart';
 import 'package:fitness_app/user/screens/signuppage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,165 +32,63 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    try {
-      final userQuery = await _firestore
-          .collection('users')
-          .where('email', isEqualTo: _emailController.text.trim())
-          .limit(1)
-          .get();
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
 
-      if (userQuery.docs.isEmpty) {
+    try {
+      // Authenticate with Firebase Authentication
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+      // Check for role in Firestore collections
+      String? role = await _getRoleFromFirestore(email);
+
+      if (role == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User not found. Please sign up.')),
+          const SnackBar(content: Text('No account found with this email')),
         );
         return;
       }
 
-      final userDoc = userQuery.docs.first;
-      final role = userDoc['role'];
-
-      // Authenticate only if role is valid
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      print(role);
-      // Navigate based on role
-      if (role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminDashboard()),
-        );
-      }
-      else if (role == 'trainer') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const FitPulseApp()),
-        );
-      }
-       else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const CustomizeInterestsScreen()),
-        );
-      }
+      // Navigate based on the user's role
+      _navigateToDashboard(role);
     } catch (e) {
+      // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Login failed: $e')),
       );
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SizedBox( // <-- Changed Container to SizedBox and wrapped with SizedBox
-        height: MediaQuery.of(context).size.height, // <-- Set height to screen height
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple, Colors.deepPurple],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max, // Keeping this for good measure
-                  children: [
-                    const SizedBox(height: 40),
-                    const Icon(Icons.bolt, color: Colors.white, size: 80),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Welcome !',
-                      style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    const SizedBox(height: 10),
-                    _buildTextField(_emailController, Icons.person,
-                        'Email Address', _validateEmail),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      _passwordController,
-                      Icons.lock,
-                      'Password',
-                      _validatePassword,
-                      obscureText: !_isPasswordVisible,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Colors.white),
-                        onPressed: () => setState(
-                            () => _isPasswordVisible = !_isPasswordVisible),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ForgotPasswordScreen()),
-                        ),
-                        child: const Text('Forgot Password?',
-                            style: TextStyle(color: Colors.white)),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 120, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        minimumSize: const Size(200, 50),
-                      ),
-                      child: const Text('Continue',
-                          style: TextStyle(color: Colors.purple, fontSize: 16)),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Don't have an account? ",
-                            style: TextStyle(fontSize: 16, color: Colors.white)),
-                        GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignupScreen()),
-                          ),
-                          child: const Text(
-                            'Sign Up',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+  Future<String?> _getRoleFromFirestore(String email) async {
+    // Check users collection
+    var userQuery = await _firestore.collection('users').where('email', isEqualTo: email).limit(1).get();
+    if (userQuery.docs.isNotEmpty) return 'user';
+
+    // Check trainers collection
+    var trainerQuery = await _firestore.collection('trainer').where('email', isEqualTo: email).limit(1).get();
+    if (trainerQuery.docs.isNotEmpty) return 'trainer';
+
+    // Check admins collection
+    var adminQuery = await _firestore.collection('admin').where('email', isEqualTo: email).limit(1).get();
+    if (adminQuery.docs.isNotEmpty) return 'admin';
+
+    return null;
+  }
+
+  void _navigateToDashboard(String role) {
+    Widget dashboard;
+
+    if (role == 'admin') {
+      dashboard = const AdminDashboard();
+    } else if (role == 'trainer') {
+      dashboard = const TrainerDashboard();
+    } else {
+      dashboard = const CustomizeInterestsScreen();
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => dashboard),
     );
   }
 
@@ -206,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildTextField(TextEditingController controller, IconData icon,
-      String hintText, FormFieldValidator<String>? validator,
+      String hintText, String? Function(String?) validator,
       {bool obscureText = false, Widget? suffixIcon}) {
     return TextFormField(
       controller: controller,
@@ -223,6 +121,71 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       style: const TextStyle(color: Colors.white),
       validator: validator,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purple, Colors.deepPurple],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+                    const Icon(Icons.bolt, color: Colors.white, size: 80),
+                    const SizedBox(height: 20),
+                    _buildTextField(_emailController, Icons.person, 'Email Address', _validateEmail),
+                    const SizedBox(height: 20),
+                    _buildTextField(_passwordController, Icons.lock, 'Password', _validatePassword, obscureText: !_isPasswordVisible, suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.white),
+                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                    )),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                        ),
+                        child: const Text('Forgot Password?', style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 120, vertical: 15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        minimumSize: const Size(200, 50),
+                      ),
+                      child: const Text('Continue', style: TextStyle(color: Colors.purple, fontSize: 16)),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
