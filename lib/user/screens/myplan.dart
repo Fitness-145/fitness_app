@@ -214,7 +214,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
                 Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AchievementGallery()),
+                  MaterialPageRoute(builder: (context) => const AchievementGallery()),
                 );
               },
             ),
