@@ -90,15 +90,20 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         'totalFee': totalFee,
         'selectedSubcategories': selectedSubcategories,
         'selectedTimes': selectedTimes,
-        'issubscribed': true,
+        
         'timestamp': FieldValue.serverTimestamp(),
       };
 
       await _firestore.collection('my_plan').add(paymentData);
+      await  _firestore.collection('users').doc(userId).update({
+        'issubscribed': true,
+      });
 
       // Store payment success in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isPaymentSuccessful', true); // Set payment success flag
+      await prefs.setBool('isPaymentSuccessful', true); 
+      
+      // Set payment success flag
 
       Navigator.push(
         context,

@@ -41,13 +41,13 @@ class _SignupScreenState extends State<SignupScreen> {
       return; // Stop if validation fails
     }
 
-    if (_selectedGender == null) { // Added gender validation
+    if (_selectedGender == null) {
+      // Added gender validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select your gender')),
       );
       return;
     }
-
 
     setState(() {
       _isLoading = true;
@@ -73,6 +73,7 @@ class _SignupScreenState extends State<SignupScreen> {
         'weight': double.parse(_weightController.text.trim()),
         'phone': _phoneController.text.trim(),
         'role': 'user',
+        
         'gender': _selectedGender, // Save selected gender
         'created_at': Timestamp.now(),
       });
@@ -200,7 +201,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           },
                           activeColor: Colors.white,
                         ),
-                        const Text('Male', style: TextStyle(color: Colors.white)),
+                        const Text('Male',
+                            style: TextStyle(color: Colors.white)),
                         Radio<String>(
                           value: 'female',
                           groupValue: _selectedGender,
@@ -211,7 +213,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           },
                           activeColor: Colors.white,
                         ),
-                        const Text('Female', style: TextStyle(color: Colors.white)),
+                        const Text('Female',
+                            style: TextStyle(color: Colors.white)),
                         Radio<String>(
                           value: 'not_to_say',
                           groupValue: _selectedGender,
@@ -222,7 +225,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           },
                           activeColor: Colors.white,
                         ),
-                        const Text('Not to say', style: TextStyle(color: Colors.white)),
+                        const Text('Not to say',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     ),
                     // Gender selection ends here
@@ -259,7 +263,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                       child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.purple)
+                          ? const CircularProgressIndicator(
+                              color: Colors.purple)
                           : const Text(
                               'Sign Up',
                               style: TextStyle(color: Colors.purple),

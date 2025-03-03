@@ -14,6 +14,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final Map<String, int> _attendanceCounts = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
+  final Map<String, DateTime?> _attendanceStartTime = {};
 
   @override
   void initState() {
@@ -66,9 +67,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     if (confirm != true) return;
 
+    // Track start time when the attendance is saved
+    DateTime currentTime = DateTime.now();
+    _attendanceStartTime[userId] = currentTime; // Track the start time
+
+    // Save attendance with start time in Firestore
     await _firestore.collection('attendance').add({
       'userId': userId,
       'timestamp': Timestamp.now(),
+      'startTime': Timestamp.fromDate(currentTime), // Save start time
     });
 
     setState(() {
@@ -100,6 +107,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   String _getAttendanceCount(String userId) {
     return 'Attendance Count: ${_attendanceCounts[userId] ?? 0}';
+  }
+
+  // Function to track the time and display it
+  String _getAttendanceStartTime(String userId) {
+    DateTime? startTime = _attendanceStartTime[userId];
+    if (startTime != null) {
+      return 'Start Time: ${startTime.hour}:${startTime.minute}:${startTime.second}';
+    }
+    return 'Start Time: N/A';
   }
 
   @override
@@ -153,6 +169,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           children: [
                             Text('User ID: $userId'),
                             Text(_getAttendanceCount(userId)),
+                            Text(_getAttendanceStartTime(userId)), // Display start time
                           ],
                         ),
                         trailing: Row(
@@ -169,6 +186,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                               onPressed: () => _addAttendance(userId),
                             ),
+                            // Save button will appear when the trainer takes attendance
+                            if (!isMarked) 
+                              IconButton(
+                                icon: Icon(Icons.save, color: Colors.blue),
+                                onPressed: () => _addAttendance(userId),
+                              ),
                           ],
                         ),
                       ),
