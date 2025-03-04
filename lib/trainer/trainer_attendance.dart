@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // Import intl package for date formatting
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -14,7 +15,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final Map<String, int> _attendanceCounts = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
-  final Map<String, DateTime?> _attendanceStartTime = {};
 
   @override
   void initState() {
@@ -24,34 +24,53 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Future<void> _loadInitialAttendanceStatus() async {
-    QuerySnapshot attendanceSnapshot = await _firestore.collection('attendance').get();
-    for (var doc in attendanceSnapshot.docs) {
-      _markedAttendance[doc['userId']] = true;
+    try {
+      QuerySnapshot attendanceSnapshot = await _firestore.collection('attendance').get();
+      for (var doc in attendanceSnapshot.docs) {
+        DateTime attendanceDate = (doc['startTime'] as Timestamp).toDate();
+        DateTime todayStart = DateTime(attendanceDate.year, attendanceDate.month, attendanceDate.day);
+        DateTime todayEnd = todayStart.add(Duration(days: 1));
+
+        DateTime now = DateTime.now();
+        if (now.isAfter(todayStart) && now.isBefore(todayEnd)) {
+          _markedAttendance[doc['userId']] = true;
+        }
+      }
+      setState(() {});
+    } catch (e) {
+      _showSnackBar('Error loading initial attendance status: $e');
     }
-    setState(() {});
   }
 
   Future<void> _loadAttendanceCounts() async {
-    QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
-    for (var userDoc in usersSnapshot.docs) {
-      String userId = userDoc.id;
-      QuerySnapshot attendanceForUser = await _firestore
-          .collection('attendance')
-          .where('userId', isEqualTo: userId)
-          .get();
-      _attendanceCounts[userId] = attendanceForUser.docs.length;
+    try {
+      QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
+        QuerySnapshot attendanceForUser = await _firestore
+            .collection('attendance')
+            .where('userId', isEqualTo: userId)
+            .get();
+        _attendanceCounts[userId] = attendanceForUser.docs.length;
+      }
+      setState(() {});
+    } catch (e) {
+      _showSnackBar('Error loading attendance counts: $e');
     }
-    setState(() {});
   }
 
+  // Function to mark attendance for today
   void _addAttendance(String userId) async {
-    if (_markedAttendance[userId] == true) return;
+    if (_markedAttendance[userId] == true) {
+      _showSnackBar('Attendance already marked for today.');
+      return;
+    }
 
-    bool confirm = await showDialog(
+    bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Attendance'),
-        content: const Text('Are you sure you want to mark attendance for this user?'),
+        content: const Text('Are you sure you want to mark attendance for today?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -65,43 +84,59 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || confirm == null) {
+      return;
+    }
 
-    // Track start time when the attendance is saved
     DateTime currentTime = DateTime.now();
-    _attendanceStartTime[userId] = currentTime; // Track the start time
 
-    // Save attendance with start time in Firestore
-    await _firestore.collection('attendance').add({
-      'userId': userId,
-      'timestamp': Timestamp.now(),
-      'startTime': Timestamp.fromDate(currentTime), // Save start time
-    });
-
-    setState(() {
-      _markedAttendance[userId] = true;
-      _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 0) + 1;
-    });
-  }
-
-  void _removeLastAttendance(String userId) async {
-    if (_attendanceCounts[userId] == null || _attendanceCounts[userId] == 0) return;
-
-    QuerySnapshot attendanceSnapshot = await _firestore
-        .collection('attendance')
-        .where('userId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
-        .limit(1)
-        .get();
-
-    if (attendanceSnapshot.docs.isNotEmpty) {
-      String docId = attendanceSnapshot.docs.first.id;
-      await _firestore.collection('attendance').doc(docId).delete();
+    try {
+      // Save today's attendance with current time
+      await _firestore.collection('attendance').add({
+        'userId': userId,
+        'timestamp': Timestamp.now(),
+        'startTime': Timestamp.fromDate(currentTime), // Save start time
+      });
 
       setState(() {
-        _attendanceCounts[userId] = _attendanceCounts[userId]! - 1;
-        _markedAttendance[userId] = _attendanceCounts[userId]! > 0;
+        _markedAttendance[userId] = true;
+        _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 0) + 1;
       });
+      _showSnackBar('Attendance marked successfully for ${userId.substring(0, 5)}...');
+    } catch (e) {
+      _showSnackBar('Error marking attendance: $e');
+    }
+  }
+
+  // Function to remove last attendance for today
+  void _removeLastAttendance(String userId) async {
+    if (_attendanceCounts[userId] == null || _attendanceCounts[userId] == 0) {
+      _showSnackBar('No attendance records to remove for this user.');
+      return;
+    }
+
+    try {
+      QuerySnapshot attendanceSnapshot = await _firestore
+          .collection('attendance')
+          .where('userId', isEqualTo: userId)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      if (attendanceSnapshot.docs.isNotEmpty) {
+        String docId = attendanceSnapshot.docs.first.id;
+        await _firestore.collection('attendance').doc(docId).delete();
+
+        setState(() {
+          _attendanceCounts[userId] = _attendanceCounts[userId]! - 1;
+          _markedAttendance[userId] = _attendanceCounts[userId]! > 0;
+        });
+        _showSnackBar('Last attendance record removed for ${userId.substring(0, 5)}...');
+      } else {
+        _showSnackBar('No attendance record found to remove.');
+      }
+    } catch (e) {
+      _showSnackBar('Error removing last attendance: $e');
     }
   }
 
@@ -109,13 +144,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return 'Attendance Count: ${_attendanceCounts[userId] ?? 0}';
   }
 
-  // Function to track the time and display it
-  String _getAttendanceStartTime(String userId) {
-    DateTime? startTime = _attendanceStartTime[userId];
-    if (startTime != null) {
-      return 'Start Time: ${startTime.hour}:${startTime.minute}:${startTime.second}';
-    }
-    return 'Start Time: N/A';
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -148,12 +180,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection('users').snapshots(),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 var users = snapshot.data!.docs.where((user) {
-                  return user['name'].toString().toLowerCase().contains(_searchQuery);
+                  return user['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(_searchQuery);
                 }).toList();
+                if (users.isEmpty && _searchQuery.isNotEmpty) {
+                  return const Center(child: Text('No users found.'));
+                }
                 return ListView.builder(
                   itemCount: users.length,
                   itemBuilder: (context, index) {
@@ -163,13 +204,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                       child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: isMarked ? Colors.green : Colors.grey,
+                          child: Icon(isMarked ? Icons.check : Icons.person_outline, color: Colors.white),
+                        ),
                         title: Text(user['name']),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('User ID: $userId'),
                             Text(_getAttendanceCount(userId)),
-                            Text(_getAttendanceStartTime(userId)), // Display start time
                           ],
                         ),
                         trailing: Row(
@@ -177,21 +221,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.undo, color: Colors.orange),
+                              tooltip: 'Remove Last Attendance',
                               onPressed: isMarked ? () => _removeLastAttendance(userId) : null,
                             ),
                             IconButton(
                               icon: Icon(
-                                isMarked ? Icons.check : Icons.add,
-                                color: isMarked ? Colors.grey : Colors.green,
+                                isMarked ? Icons.check_circle : Icons.add_circle,
+                                size: 30,
+                                color: isMarked ? Colors.green : Colors.blue,
                               ),
+                              tooltip: isMarked ? 'Attendance Marked' : 'Mark Attendance',
                               onPressed: () => _addAttendance(userId),
                             ),
-                            // Save button will appear when the trainer takes attendance
-                            if (!isMarked) 
-                              IconButton(
-                                icon: Icon(Icons.save, color: Colors.blue),
-                                onPressed: () => _addAttendance(userId),
-                              ),
                           ],
                         ),
                       ),

@@ -38,6 +38,9 @@ dependencies:
   file_picker: ^9.0.2  # Use the latest version
   shared_preferences: ^2.5.2
 
+  # Date Formatting (Added intl package)
+  intl: ^0.18.1  
+
 # Dev dependencies (for testing and linting)
 dev_dependencies:
   flutter_test:
