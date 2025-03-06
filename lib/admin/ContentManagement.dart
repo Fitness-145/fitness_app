@@ -20,7 +20,7 @@ class _ContentManagementState extends State<ContentManagement> {
   String? _uploadedFileURL;
   final TextEditingController _youtubeController = TextEditingController();
   final List<String> _youtubeLinks = [];
-  Map<String, int> _attendanceCounts = {}; // Map to store attendance counts for users
+  final Map<String, int> _attendanceCounts = {}; // Map to store attendance counts for users
 
   // Function to upload file to Firebase Storage
   Future<void> _uploadFile(File file, String path) async {

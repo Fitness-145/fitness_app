@@ -17,7 +17,7 @@ dependencies:
     sdk: flutter
 
   # UI & Icons
-  cupertino_icons: ^1.0.8  # Cupertino Icons package
+  cupertino_icons: ^1.0.8  # Cupertino Icons packageflutter pub add camera
 
   # Image Handling
   image_picker: ^0.8.5+3  # Add the correct version you need
@@ -40,6 +40,13 @@ dependencies:
 
   # Date Formatting (Added intl package)
   intl: ^0.18.1  
+  webview_flutter: ^4.10.0
+  flutter_bloc: ^9.1.0
+  camera: ^0.11.1
+  google_ml_kit: ^0.19.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  google_mlkit_commons: ^0.9.0
 
 # Dev dependencies (for testing and linting)
 dev_dependencies:

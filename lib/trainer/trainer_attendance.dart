@@ -25,11 +25,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future<void> _loadInitialAttendanceStatus() async {
     try {
-      QuerySnapshot attendanceSnapshot = await _firestore.collection('attendance').get();
+      QuerySnapshot attendanceSnapshot =
+          await _firestore.collection('attendance').get();
       for (var doc in attendanceSnapshot.docs) {
         DateTime attendanceDate = (doc['startTime'] as Timestamp).toDate();
-        DateTime todayStart = DateTime(attendanceDate.year, attendanceDate.month, attendanceDate.day);
-        DateTime todayEnd = todayStart.add(Duration(days: 1));
+        DateTime todayStart = DateTime(
+            attendanceDate.year, attendanceDate.month, attendanceDate.day);
+        DateTime todayEnd = todayStart.add(const Duration(days: 1));
 
         DateTime now = DateTime.now();
         if (now.isAfter(todayStart) && now.isBefore(todayEnd)) {
@@ -70,7 +72,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Attendance'),
-        content: const Text('Are you sure you want to mark attendance for today?'),
+        content:
+            const Text('Are you sure you want to mark attendance for today?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -102,7 +105,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         _markedAttendance[userId] = true;
         _attendanceCounts[userId] = (_attendanceCounts[userId] ?? 0) + 1;
       });
-      _showSnackBar('Attendance marked successfully for ${userId.substring(0, 5)}...');
+      _showSnackBar(
+          'Attendance marked successfully for ${userId.substring(0, 5)}...');
     } catch (e) {
       _showSnackBar('Error marking attendance: $e');
     }
@@ -131,7 +135,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _attendanceCounts[userId] = _attendanceCounts[userId]! - 1;
           _markedAttendance[userId] = _attendanceCounts[userId]! > 0;
         });
-        _showSnackBar('Last attendance record removed for ${userId.substring(0, 5)}...');
+        _showSnackBar(
+            'Last attendance record removed for ${userId.substring(0, 5)}...');
       } else {
         _showSnackBar('No attendance record found to remove.');
       }
@@ -202,11 +207,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     String userId = user.id;
                     bool isMarked = _markedAttendance[userId] ?? false;
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: isMarked ? Colors.green : Colors.grey,
-                          child: Icon(isMarked ? Icons.check : Icons.person_outline, color: Colors.white),
+                          backgroundColor:
+                              isMarked ? Colors.green : Colors.grey,
+                          child: Icon(
+                              isMarked ? Icons.check : Icons.person_outline,
+                              color: Colors.white),
                         ),
                         title: Text(user['name']),
                         subtitle: Column(
@@ -220,17 +229,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.undo, color: Colors.orange),
+                              icon:
+                                  const Icon(Icons.undo, color: Colors.orange),
                               tooltip: 'Remove Last Attendance',
-                              onPressed: isMarked ? () => _removeLastAttendance(userId) : null,
+                              onPressed: isMarked
+                                  ? () => _removeLastAttendance(userId)
+                                  : null,
                             ),
                             IconButton(
                               icon: Icon(
-                                isMarked ? Icons.check_circle : Icons.add_circle,
+                                isMarked
+                                    ? Icons.check_circle
+                                    : Icons.add_circle,
                                 size: 30,
                                 color: isMarked ? Colors.green : Colors.blue,
                               ),
-                              tooltip: isMarked ? 'Attendance Marked' : 'Mark Attendance',
+                              tooltip: isMarked
+                                  ? 'Attendance Marked'
+                                  : 'Mark Attendance',
                               onPressed: () => _addAttendance(userId),
                             ),
                           ],
