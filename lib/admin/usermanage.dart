@@ -123,15 +123,17 @@ class _UserManagementState extends State<UserManagement> {
                     var user = users[index];
                     bool isSelected = selectedUsers.contains(user.id);
 
-                    return FutureBuilder<int>(
-                      future: _getUserAttendanceCount(user.id), // Fetch attendance count
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: _firestore
+                          .collection('attendance')
+                          .where('userId', isEqualTo: user.id)
+                          .snapshots(),
                       builder: (context, attendanceSnapshot) {
-                        if (attendanceSnapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (!attendanceSnapshot.hasData) {
                           return const Center(child: CircularProgressIndicator());
                         }
 
-                        int attendanceCount = attendanceSnapshot.data ?? 0;
+                        int attendanceCount = attendanceSnapshot.data!.docs.length;
 
                         return GestureDetector(
                           onLongPress: () {
@@ -216,20 +218,6 @@ class _UserManagementState extends State<UserManagement> {
           .map((item) => DropdownMenuItem(value: item, child: Text(item)))
           .toList(),
     );
-  }
-
-  Future<int> _getUserAttendanceCount(String userId) async {
-    try {
-      final attendanceSnapshot = await _firestore
-          .collection('attendance_records')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      return attendanceSnapshot.docs.length;
-    } catch (error) {
-      print('Error fetching attendance count: $error');
-      return 0;
-    }
   }
 
   void _showUserDetails(
