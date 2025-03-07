@@ -15,6 +15,16 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  void _openUserDetails(BuildContext context, Map<String, dynamic>? userData) {
+    if (userData == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserDetailsPage(userData: userData),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +44,6 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
                 ),
               ]
             : [
-                // Sorting Dropdown
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: DropdownButton<String>(
@@ -82,15 +91,14 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
 
                 List<QueryDocumentSnapshot> users = snapshot.data!.docs;
 
-                // Apply search filter
                 if (searchQuery.isNotEmpty) {
                   users = users
-                      .where((user) =>
-                          user['name'].toLowerCase().contains(searchQuery))
+                      .where((user) => user['name']
+                          .toLowerCase()
+                          .contains(searchQuery))
                       .toList();
                 }
 
-                // Sorting logic
                 if (sortBy == 'name') {
                   users.sort((a, b) =>
                       a['name'].toString().compareTo(b['name'].toString()));
@@ -109,8 +117,10 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
                   itemBuilder: (context, index) {
                     var user = users[index];
                     bool isSelected = selectedUsers.contains(user.id);
+                    final userData = user.data() as Map<String, dynamic>?;
 
                     return GestureDetector(
+                      onTap: () => _openUserDetails(context, userData),
                       onLongPress: () {
                         setState(() {
                           if (isSelected) {
@@ -126,8 +136,8 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.grey[300] : Colors.white,
-                          border: Border.all(
-                              color: Colors.deepPurple, width: 1.5),
+                          border:
+                              Border.all(color: Colors.deepPurple, width: 1.5),
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
@@ -140,7 +150,8 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
                         child: ListTile(
                           title: Text(
                             user['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
                             user['issubscribed'] == true
@@ -173,5 +184,31 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
     setState(() {
       selectedUsers.clear();
     });
+  }
+}
+
+class UserDetailsPage extends StatelessWidget {
+  final Map<String, dynamic> userData;
+  const UserDetailsPage({required this.userData, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('${userData['name']} - Subscription Details')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Subscription: ${userData['issubscribed'] ? "Active" : "Inactive"}', style: TextStyle(fontSize: 18)),
+            Text('Package: ${userData['package'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
+            Text('Batch: ${userData['batch'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
+            Text('Total Amount: \$${userData['total_amount'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
+            Text('Amount Paid: \$${userData['amount_paid'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
+            Text('Pending Amount: \$${userData['pending_amount'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
+          ],
+        ),
+      ),
+    );
   }
 }

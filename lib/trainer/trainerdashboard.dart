@@ -44,6 +44,8 @@ class TrainerDashboard extends StatelessWidget {
                 Colors.green, const UserListScreen()),
             _buildDashboardCard(
                 context, 'Messages', Icons.message, Colors.blue, null),
+            _buildDashboardCard(
+                context, 'Verification', Icons.verified, Colors.purple, null),
           ],
         ),
       ),

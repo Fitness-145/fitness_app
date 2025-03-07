@@ -3,6 +3,7 @@ import 'package:fitness_app/admin/usermanage.dart';
 import 'package:flutter/material.dart';
 import 'ContentManagement.dart';
 import 'subscription_tracking.dart';
+import 'trainer_management.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -35,12 +36,17 @@ class AdminDashboard extends StatelessWidget {
                 context,
                 "Subscription Tracking",
                 Icons.payment,
-                const SubscriptionTracking()), // Removed 'const' here
+                const SubscriptionTracking()),
             _buildCard(
                 context,
                 "Messages",
                 Icons.message,
-                const AdminMessageScreen()), // Updated to Messages
+                const AdminMessageScreen()),
+            _buildCard(
+                context,
+                "Trainer Management",
+                Icons.fitness_center,
+                const TrainerManagement()),
           ],
         ),
       ),

@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (role == 'trainer') {
       dashboard = const TrainerDashboard();
     } else {
-      dashboard = const CustomizeInterestsScreen();
+      dashboard = CustomizeInterestsScreen();
     }
 
     Navigator.pushReplacement(
