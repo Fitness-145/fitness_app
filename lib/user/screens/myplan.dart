@@ -21,6 +21,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
   List<String> planDetails = [];
   bool isLoading = false;
   bool isPlanVerified = false;
+  bool showForm = true; // Track whether to show the form or output
 
   // Form controllers
   final _sexController = TextEditingController();
@@ -31,6 +32,9 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
   final _fitnessGoalController = TextEditingController();
   final _fitnessTypeController = TextEditingController();
   int _currentIndex = 0;
+
+  // Form key for validation
+  final _formKey = GlobalKey<FormState>();
 
   // Key to control the drawer
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -52,132 +56,6 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     _fitnessGoalController.dispose();
     _fitnessTypeController.dispose();
     super.dispose();
-  }
-
-  void _showInputDialog() {
-    String selectedSex = 'Male';
-    String selectedHypertension = 'No';
-    String selectedDiabetes = 'No';
-    String selectedFitnessGoal = 'Weight Gain';
-    String selectedFitnessType = 'Muscular Fitness';
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Enter Plan Details'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Dropdown for Sex
-                DropdownButtonFormField<String>(
-                  value: selectedSex,
-                  decoration: const InputDecoration(labelText: 'Sex'),
-                  items: ['Male', 'Female'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedSex = value!;
-                  },
-                ),
-                // TextField for Age
-                _buildTextField('Age', _ageController, isNumber: true),
-                // Dropdown for Hypertension
-                DropdownButtonFormField<String>(
-                  value: selectedHypertension,
-                  decoration: const InputDecoration(labelText: 'Hypertension'),
-                  items: ['No', 'Yes'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedHypertension = value!;
-                  },
-                ),
-                // Dropdown for Diabetes
-                DropdownButtonFormField<String>(
-                  value: selectedDiabetes,
-                  decoration: const InputDecoration(labelText: 'Diabetes'),
-                  items: ['No', 'Yes'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedDiabetes = value!;
-                  },
-                ),
-                // TextField for BMI
-                _buildTextField('BMI', _bmiController, isNumber: true),
-                // Dropdown for Fitness Goal
-                DropdownButtonFormField<String>(
-                  value: selectedFitnessGoal,
-                  decoration: const InputDecoration(labelText: 'Fitness Goal'),
-                  items: ['Weight Gain', 'Weight Loss'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedFitnessGoal = value!;
-                  },
-                ),
-                // Dropdown for Fitness Type
-                DropdownButtonFormField<String>(
-                  value: selectedFitnessType,
-                  decoration: const InputDecoration(labelText: 'Fitness Type'),
-                  items: ['Muscular Fitness', 'Cardio Fitness'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedFitnessType = value!;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _submitForm(
-                  selectedSex,
-                  selectedHypertension,
-                  selectedDiabetes,
-                  selectedFitnessGoal,
-                  selectedFitnessType,
-                );
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-              child: const Text('Submit'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildTextField(String label, TextEditingController controller,
-      {bool isNumber = false}) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(labelText: label),
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-    );
   }
 
   Future<void> fetchPlanDetails() async {
@@ -202,6 +80,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
                 this.planDetails = planDetails.cast<String>();
                 isPlanVerified = true;
                 isLoading = false;
+                showForm = false; // Hide the form after fetching the plan
               });
             }
           } else {
@@ -252,20 +131,26 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     String fitnessGoal,
     String fitnessType,
   ) {
-    final requestData = {
-      "Sex": sex,
-      "Age": int.tryParse(_ageController.text) ?? 0,
-      "Hypertension": hypertension,
-      "Diabetes": diabetes,
-      "BMI": double.tryParse(_bmiController.text) ?? 0.0,
-      "Fitness Goal": fitnessGoal,
-      "Fitness Type": fitnessType,
-    };
-    fetchPlanDetailsFromAPI(requestData);
+    if (_formKey.currentState!.validate()) {
+      final requestData = {
+        "Sex": sex,
+        "Age": int.tryParse(_ageController.text) ?? 0,
+        "Hypertension": hypertension,
+        "Diabetes": diabetes,
+        "BMI": double.tryParse(_bmiController.text) ?? 0.0,
+        "Fitness Goal": fitnessGoal,
+        "Fitness Type": fitnessType,
+      };
+      fetchPlanDetailsFromAPI(requestData);
+    }
   }
 
   Future<void> fetchPlanDetailsFromAPI(Map<String, dynamic> requestData) async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      showForm = false; // Hide the form when fetching the plan
+    });
+
     try {
       final response = await http.post(
         Uri.parse('https://50db-117-211-246-207.ngrok-free.app/predict'),
@@ -382,48 +267,85 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('plans')
-                    .doc(FirebaseAuth.instance.currentUser?.uid)
-                    .get(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: Colors.purple));
-                  }
+          : Column(
+              children: [
+                if (showForm) // Show the form only if `showForm` is true
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: _buildInputForm(),
+                    ),
+                  ),
+                if (!showForm) // Show the output only if `showForm` is false
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // Add a pencil icon and "Click to edit details" message
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Click to edit details',
+                                style: TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.purple),
+                                onPressed: () {
+                                  setState(() {
+                                    showForm = true; // Show the form again for editing
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('plans')
+                                .doc(FirebaseAuth.instance.currentUser?.uid)
+                                .get(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator(color: Colors.purple));
+                              }
 
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
+                              if (snapshot.hasError) {
+                                return Center(child: Text('Error: ${snapshot.error}'));
+                              }
 
-                  if (!snapshot.hasData || !snapshot.data!.exists) {
-                    return const Center(child: Text('No plan found. Please create a new plan.'));
-                  }
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return const Center(child: Text('No plan found. Please create a new plan.'));
+                              }
 
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
-                  final isVerified = data['verified'] ?? false;
-                  final planDetails = data['planDetails'] as List<dynamic>;
+                              final data = snapshot.data!.data() as Map<String, dynamic>;
+                              final isVerified = data['verified'] ?? false;
+                              final planDetails = data['planDetails'] as List<dynamic>;
 
-                  if (!isVerified) {
-                    return const Center(child: Text('Your plan is pending verification by the trainer.'));
-                  }
+                              if (!isVerified) {
+                                return const Center(child: Text('Your plan is pending verification by the trainer.'));
+                              }
 
-                  return ListView.builder(
-                    itemCount: planDetails.length,
-                    itemBuilder: (context, index) {
-                      return _buildPlanCard(planDetails[index].toString());
-                    },
-                  );
-                },
-              ),
+                              return ListView.builder(
+                                itemCount: planDetails.length,
+                                itemBuilder: (context, index) {
+                                  return _buildPlanCard(planDetails[index].toString());
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.purple,
-        onPressed: _showInputDialog,
-        child: const Icon(Icons.add),
-      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
@@ -467,6 +389,181 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     );
   }
 
+  Widget _buildInputForm() {
+    String selectedSex = 'Male';
+    String selectedHypertension = 'No';
+    String selectedDiabetes = 'No';
+    String selectedFitnessGoal = 'Weight Gain';
+    String selectedFitnessType = 'Muscular Fitness';
+
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Back button to return to plan details
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.purple),
+                    onPressed: () {
+                      setState(() {
+                        showForm = false; // Go back to plan details
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Back to Plan Details',
+                    style: TextStyle(
+                      color: Colors.purple,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Create a New Plan',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              // Dropdown for Sex
+              DropdownButtonFormField<String>(
+                value: selectedSex,
+                decoration: const InputDecoration(labelText: 'Sex'),
+                items: ['Male', 'Female'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  selectedSex = value!;
+                },
+              ),
+              const SizedBox(height: 16),
+              // TextField for Age
+              TextFormField(
+                controller: _ageController,
+                decoration: const InputDecoration(labelText: 'Age'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your age';
+                  }
+                  final age = int.tryParse(value);
+                  if (age == null || age < 1 || age > 120) {
+                    return 'Please enter a valid age (1-120)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              // Dropdown for Hypertension
+              DropdownButtonFormField<String>(
+                value: selectedHypertension,
+                decoration: const InputDecoration(labelText: 'Hypertension'),
+                items: ['No', 'Yes'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  selectedHypertension = value!;
+                },
+              ),
+              const SizedBox(height: 16),
+              // Dropdown for Diabetes
+              DropdownButtonFormField<String>(
+                value: selectedDiabetes,
+                decoration: const InputDecoration(labelText: 'Diabetes'),
+                items: ['No', 'Yes'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  selectedDiabetes = value!;
+                },
+              ),
+              const SizedBox(height: 16),
+              // TextField for BMI
+              TextFormField(
+                controller: _bmiController,
+                decoration: const InputDecoration(labelText: 'BMI'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your BMI';
+                  }
+                  final bmi = double.tryParse(value);
+                  if (bmi == null || bmi < 10 || bmi > 50) {
+                    return 'Please enter a valid BMI (10-50)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              // Dropdown for Fitness Goal
+              DropdownButtonFormField<String>(
+                value: selectedFitnessGoal,
+                decoration: const InputDecoration(labelText: 'Fitness Goal'),
+                items: ['Weight Gain', 'Weight Loss'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  selectedFitnessGoal = value!;
+                },
+              ),
+              const SizedBox(height: 16),
+              // Dropdown for Fitness Type
+              DropdownButtonFormField<String>(
+                value: selectedFitnessType,
+                decoration: const InputDecoration(labelText: 'Fitness Type'),
+                items: ['Muscular Fitness', 'Cardio Fitness'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  selectedFitnessType = value!;
+                },
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  _submitForm(
+                    selectedSex,
+                    selectedHypertension,
+                    selectedDiabetes,
+                    selectedFitnessGoal,
+                    selectedFitnessType,
+                  );
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                child: const Text('Submit'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -486,6 +583,6 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
         context,
         MaterialPageRoute(builder: (context) =>  ChatbotScreen()),
       );
-    } 
+    }
   }
-} 
+}
