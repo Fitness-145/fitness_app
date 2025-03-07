@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Import intl package for date formatting
+// Import intl package for date formatting
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});

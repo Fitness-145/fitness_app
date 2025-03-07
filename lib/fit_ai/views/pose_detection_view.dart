@@ -7,6 +7,8 @@ import '../painters/pose_painter.dart';
 import 'detector_view.dart';
 
 class PoseDetectorView extends StatefulWidget {
+  const PoseDetectorView({super.key});
+
   @override
   State<StatefulWidget> createState() => _PoseDetectorViewState();
 }

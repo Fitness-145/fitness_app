@@ -14,16 +14,15 @@ import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 
 class CameraView extends StatefulWidget {
-  CameraView(
-      {Key? key,
+  const CameraView(
+      {super.key,
       required this.customPaint,
       required this.onImage,
       this.posePainter,
       this.onCameraFeedReady,
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
-      this.initialCameraLensDirection = CameraLensDirection.back})
-      : super(key: key);
+      this.initialCameraLensDirection = CameraLensDirection.back});
 
   final CustomPaint? customPaint;
   final PosePainter? posePainter;
@@ -94,7 +93,7 @@ class _CameraViewState extends State<CameraView> {
         // Verificacion
 
         // Verificacion
-        if (p1 != null && p2 != null && p3 != null) {
+        if (p2 != null) {
           final rtaAngle = utils.angle(p1, p2, p3);
           final rta = utils.isPullUp(rtaAngle, bloc.state);
 
@@ -135,8 +134,8 @@ class _CameraViewState extends State<CameraView> {
         children: <Widget>[
           Center(
             child: _changingCameraLens
-                ? Center(
-                    child: const Text('Changing camera lens'),
+                ? const Center(
+                    child: Text('Changing camera lens'),
                   )
                 : CameraPreview(
                     _controller!,
@@ -164,13 +163,13 @@ class _CameraViewState extends State<CameraView> {
             child: Container(
               color: Colors.white,
               height: 60,
-              child: Text('next workout start'),
+              child: const Text('next workout start'),
             ))
         : Positioned(
             top: 50,
             left: 0,
             right: 0,
-            child: Container(
+            child: SizedBox(
               width: 70,
               child: Column(
                 children: [
@@ -191,11 +190,11 @@ class _CameraViewState extends State<CameraView> {
                         color: Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
                     ),
                     child: Center(
                       child: Text(
-                        '${bloc.counter.toStringAsFixed(2)}', // Assuming bloc has a count property
+                        bloc.counter.toStringAsFixed(2), // Assuming bloc has a count property
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -223,7 +222,7 @@ class _CameraViewState extends State<CameraView> {
               Navigator.of(context).pop();
             },
             backgroundColor: Colors.black54,
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_ios_outlined,
               size: 20,
             ),
@@ -241,7 +240,7 @@ class _CameraViewState extends State<CameraView> {
             heroTag: Object(),
             onPressed: widget.onDetectorViewModeChanged,
             backgroundColor: Colors.black54,
-            child: Icon(
+            child: const Icon(
               Icons.photo_library_outlined,
               size: 25,
             ),
@@ -307,7 +306,7 @@ class _CameraViewState extends State<CameraView> {
                     child: Center(
                       child: Text(
                         '${_currentZoomLevel.toStringAsFixed(1)}x',
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -322,7 +321,7 @@ class _CameraViewState extends State<CameraView> {
         top: 40,
         right: 8,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxHeight: 250,
           ),
           child: Column(children: [
@@ -337,7 +336,7 @@ class _CameraViewState extends State<CameraView> {
                 child: Center(
                   child: Text(
                     '${_currentExposureOffset.toStringAsFixed(1)}x',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -476,7 +475,9 @@ class _CameraViewState extends State<CameraView> {
     // * bgra8888 for iOS
     if (format == null ||
         (Platform.isAndroid && format != InputImageFormat.nv21) ||
-        (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
+        (Platform.isIOS && format != InputImageFormat.bgra8888)) {
+      return null;
+    }
 
     // since format is constraint to nv21 or bgra8888, both only have one plane
     if (image.planes.length != 1) return null;

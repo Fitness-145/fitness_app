@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class ChatbotScreen extends StatefulWidget {
+  const ChatbotScreen({super.key});
+
   @override
   _ChatbotScreenState createState() => _ChatbotScreenState();
 }
@@ -72,16 +74,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chatbot'),
+        title: const Text('Chatbot'),
         backgroundColor: Colors.deepPurpleAccent,
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
-                 Navigator.push(context, MaterialPageRoute(builder: (context) => Counterapp()),);
+                 Navigator.push(context, MaterialPageRoute(builder: (context) => const Counterapp()),);
               },
-              child: Text("Click Me"),
+              child: const Text("Click Me"),
             ),
           ),
         ],
