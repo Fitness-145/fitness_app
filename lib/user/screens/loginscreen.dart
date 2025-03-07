@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Check trainers collection
     var trainerQuery = await _firestore
-        .collection('trainer')
+        .collection('trainers')
         .where('email', isEqualTo: email)
         .limit(1)
         .get();

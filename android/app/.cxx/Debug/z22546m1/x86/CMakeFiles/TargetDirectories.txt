@@ -1,0 +1,2 @@
+C:/Users/binesh/fitness_app/fitness_app-6/android/app/.cxx/Debug/z22546m1/x86/CMakeFiles/edit_cache.dir
+C:/Users/binesh/fitness_app/fitness_app-6/android/app/.cxx/Debug/z22546m1/x86/CMakeFiles/rebuild_cache.dir
