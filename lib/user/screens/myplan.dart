@@ -486,6 +486,6 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
         context,
         MaterialPageRoute(builder: (context) =>  ChatbotScreen()),
       );
-    }
+    } 
   }
-}
+} 
