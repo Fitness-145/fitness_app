@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fitness_app/baseurl.dart';
 import 'package:fitness_app/user/achievement.dart';
 import 'package:fitness_app/user/screens/chatbot.dart';
 import 'package:fitness_app/user/screens/gymactivity_screen.dart';
@@ -153,7 +154,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://50db-117-211-246-207.ngrok-free.app/predict'),
+        Uri.parse('$baseurl/predict'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(requestData),
       );
