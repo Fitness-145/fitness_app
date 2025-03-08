@@ -89,23 +89,21 @@ class _SquatCameraViewState extends State<SquatCameraView> {
         var knee = getPoseLandmark(PoseLandmarkType.rightKnee);
         var ankle = getPoseLandmark(PoseLandmarkType.rightAnkle);
 
-        if (knee != null) {
-          final kneeAngle = utils.angle(hip, knee, ankle);
-          final squatState = utils.isSquat(kneeAngle, bloc.state);
+        final kneeAngle = utils.angle(hip, knee, ankle);
+        final squatState = utils.isSquat(kneeAngle, bloc.state);
 
-          print('Squat angle: ${kneeAngle.toStringAsFixed(2)}');
-          print('Squat state: $squatState');
+        print('Squat angle: ${kneeAngle.toStringAsFixed(2)}');
+        print('Squat state: $squatState');
 
-          if (squatState != null) {
-            if (squatState == SquatState.init) {
-              bloc.setSquatState(squatState);
-            } else if (squatState == SquatState.complete) {
-              bloc.increment();
-              bloc.setSquatState(SquatState.neutral); // Reset
-            }
+        if (squatState != null) {
+          if (squatState == SquatState.init) {
+            bloc.setSquatState(squatState);
+          } else if (squatState == SquatState.complete) {
+            bloc.increment();
+            bloc.setSquatState(SquatState.neutral); // Reset
           }
         }
-      }
+            }
     }
     super.didUpdateWidget(oldWidget);
   }

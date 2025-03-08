@@ -16,7 +16,7 @@ class _TrainerAIPageState extends State<TrainerAIPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit AI Data'),
+        title: const Text('Edit AI Data'),
         content: TextField(controller: controller),
         actions: [
           ElevatedButton(
@@ -24,7 +24,7 @@ class _TrainerAIPageState extends State<TrainerAIPage> {
               await _firestore.collection('ai_data').doc(docId).update({'content': controller.text});
               Navigator.pop(context);
             },
-            child: Text('Update'),
+            child: const Text('Update'),
           ),
         ],
       ),
@@ -47,16 +47,16 @@ class _TrainerAIPageState extends State<TrainerAIPage> {
         stream: _firestore.collection('ai_data').snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No AI Data Available'));
+            return const Center(child: Text('No AI Data Available'));
           }
           return ListView(
             children: snapshot.data!.docs.map((doc) {
               final data = doc.data() as Map<String, dynamic>?;
               return Card(
-                margin: EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 child: ListTile(
                   title: Text(data?['content'] ?? 'No Content'),
                   subtitle: Text(data?['verified'] == true ? 'Verified' : 'Pending Verification'),
@@ -64,15 +64,15 @@ class _TrainerAIPageState extends State<TrainerAIPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit, color: Colors.blue),
+                        icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: () => _editData(doc.id, data!),
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _deleteData(doc.id),
                       ),
                       IconButton(
-                        icon: Icon(Icons.verified, color: Colors.green),
+                        icon: const Icon(Icons.verified, color: Colors.green),
                         onPressed: () => _verifyData(doc.id),
                       ),
                     ],

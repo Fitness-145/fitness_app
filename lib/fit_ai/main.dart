@@ -40,15 +40,15 @@ class Home extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
                   ExpansionTile(
-                    title: const Text('Vision APIs'),
+                    title: Text('Vision APIs'),
                     children: [
                       CustomCard('Pose Detection', PoseDetectorView()),
                     ],

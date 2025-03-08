@@ -93,21 +93,19 @@ class _CameraViewState extends State<CameraView> {
         // Verificacion
 
         // Verificacion
-        if (p2 != null) {
-          final rtaAngle = utils.angle(p1, p2, p3);
-          final rta = utils.isPullUp(rtaAngle, bloc.state);
+        final rtaAngle = utils.angle(p1, p2, p3);
+        final rta = utils.isPullUp(rtaAngle, bloc.state);
 
-          print('pushup${rtaAngle.toStringAsFixed(2)}');
-          if (rta != null) {
-            if (rta == PushUpState.init) {
-              bloc.setPullUpState(rta);
-            } else if (rta == PushUpState.complete) {
-              bloc.increment();
-              bloc.setPullUpState(PullUpState.neutral); // reiniciar
-            }
+        print('pushup${rtaAngle.toStringAsFixed(2)}');
+        if (rta != null) {
+          if (rta == PushUpState.init) {
+            bloc.setPullUpState(rta);
+          } else if (rta == PushUpState.complete) {
+            bloc.increment();
+            bloc.setPullUpState(PullUpState.neutral); // reiniciar
           }
         }
-      }
+            }
     }
     super.didUpdateWidget(oldWidget);
   }

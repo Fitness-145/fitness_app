@@ -50,7 +50,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Trainer details saved successfully!')),
+          const SnackBar(content: Text('Trainer details saved successfully!')),
         );
 
         _clearForm();
@@ -65,7 +65,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
   void _deleteTrainer(String trainerId) async {
     await FirebaseFirestore.instance.collection('trainers').doc(trainerId).delete();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Trainer deleted successfully!')),
+      const SnackBar(content: Text('Trainer deleted successfully!')),
     );
   }
 
@@ -82,7 +82,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit Trainer'),
+        title: const Text('Edit Trainer'),
         content: Form(
           key: _formKey,
           child: Column(
@@ -90,35 +90,35 @@ class _TrainerManagementState extends State<TrainerManagement> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Trainer Name'),
+                decoration: const InputDecoration(labelText: 'Trainer Name'),
                 validator: (value) => value!.isEmpty ? 'Enter name' : null,
               ),
               TextFormField(
                 controller: _specializationController,
-                decoration: InputDecoration(labelText: 'Specialization'),
+                decoration: const InputDecoration(labelText: 'Specialization'),
                 validator: (value) => value!.isEmpty ? 'Enter specialization' : null,
               ),
               TextFormField(
                 controller: _experienceController,
-                decoration: InputDecoration(labelText: 'Experience (years)'),
+                decoration: const InputDecoration(labelText: 'Experience (years)'),
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? 'Enter experience' : null,
               ),
               TextFormField(
                 controller: _contactController,
-                decoration: InputDecoration(labelText: 'Contact'),
+                decoration: const InputDecoration(labelText: 'Contact'),
                 keyboardType: TextInputType.phone,
                 validator: (value) => value!.isEmpty ? 'Enter contact' : null,
               ),
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email ID'),
+                decoration: const InputDecoration(labelText: 'Email ID'),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) => value!.isEmpty ? 'Enter email' : null,
               ),
               TextFormField(
                 controller: _newPasswordController,
-                decoration: InputDecoration(labelText: 'New Password (optional)'),
+                decoration: const InputDecoration(labelText: 'New Password (optional)'),
                 obscureText: true,
               ),
             ],
@@ -135,7 +135,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
                 Navigator.pop(context);
               }
             },
-            child: Text('Save'),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -147,7 +147,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
       User user = FirebaseAuth.instance.currentUser!;
       await user.updatePassword(_newPasswordController.text);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password updated successfully!')),
+        const SnackBar(content: Text('Password updated successfully!')),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +170,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Trainer Management')),
+      appBar: AppBar(title: const Text('Trainer Management')),
       body: Column(
         children: [
           Expanded(
@@ -178,22 +178,22 @@ class _TrainerManagementState extends State<TrainerManagement> {
               stream: FirebaseFirestore.instance.collection('trainers').snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No Trainers Available'));
+                  return const Center(child: Text('No Trainers Available'));
                 }
                 return ListView(
                   children: snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     return Card(
-                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(color: Colors.purple),
+                        side: const BorderSide(color: Colors.purple),
                       ),
                       child: ListTile(
-                        title: Text(data['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(data['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -205,11 +205,11 @@ class _TrainerManagementState extends State<TrainerManagement> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit, color: Colors.blue),
+                              icon: const Icon(Icons.edit, color: Colors.blue),
                               onPressed: () => _editTrainer(doc.id, data),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _deleteTrainer(doc.id),
                             ),
                           ],
@@ -227,7 +227,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text('Add Trainer'),
+                  title: const Text('Add Trainer'),
                   content: Form(
                     key: _formKey,
                     child: Column(
@@ -235,35 +235,35 @@ class _TrainerManagementState extends State<TrainerManagement> {
                       children: [
                         TextFormField(
                           controller: _nameController,
-                          decoration: InputDecoration(labelText: 'Trainer Name'),
+                          decoration: const InputDecoration(labelText: 'Trainer Name'),
                           validator: (value) => value!.isEmpty ? 'Enter name' : null,
                         ),
                         TextFormField(
                           controller: _specializationController,
-                          decoration: InputDecoration(labelText: 'Specialization'),
+                          decoration: const InputDecoration(labelText: 'Specialization'),
                           validator: (value) => value!.isEmpty ? 'Enter specialization' : null,
                         ),
                         TextFormField(
                           controller: _experienceController,
-                          decoration: InputDecoration(labelText: 'Experience (years)'),
+                          decoration: const InputDecoration(labelText: 'Experience (years)'),
                           keyboardType: TextInputType.number,
                           validator: (value) => value!.isEmpty ? 'Enter experience' : null,
                         ),
                         TextFormField(
                           controller: _contactController,
-                          decoration: InputDecoration(labelText: 'Contact'),
+                          decoration: const InputDecoration(labelText: 'Contact'),
                           keyboardType: TextInputType.phone,
                           validator: (value) => value!.isEmpty ? 'Enter contact' : null,
                         ),
                         TextFormField(
                           controller: _emailController,
-                          decoration: InputDecoration(labelText: 'Email ID'),
+                          decoration: const InputDecoration(labelText: 'Email ID'),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) => value!.isEmpty ? 'Enter email' : null,
                         ),
                         TextFormField(
                           controller: _passwordController,
-                          decoration: InputDecoration(labelText: 'Password'),
+                          decoration: const InputDecoration(labelText: 'Password'),
                           obscureText: true,
                           validator: (value) => value!.isEmpty ? 'Enter password' : null,
                         ),
@@ -276,13 +276,13 @@ class _TrainerManagementState extends State<TrainerManagement> {
                         _saveTrainerDetails();
                         Navigator.pop(context);
                       },
-                      child: Text('Save'),
+                      child: const Text('Save'),
                     ),
                   ],
                 ),
               );
             },
-            child: Text('Add Trainer'),
+            child: const Text('Add Trainer'),
           ),
         ],
       ),

@@ -196,16 +196,16 @@ class UserDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('${userData['name']} - Subscription Details')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Subscription: ${userData['issubscribed'] ? "Active" : "Inactive"}', style: TextStyle(fontSize: 18)),
-            Text('Package: ${userData['package'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
-            Text('Batch: ${userData['batch'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
-            Text('Total Amount: \$${userData['total_amount'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
-            Text('Amount Paid: \$${userData['amount_paid'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
-            Text('Pending Amount: \$${userData['pending_amount'] ?? "N/A"}', style: TextStyle(fontSize: 18)),
+            Text('Subscription: ${userData['issubscribed'] ? "Active" : "Inactive"}', style: const TextStyle(fontSize: 18)),
+            Text('Package: ${userData['package'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
+            Text('Batch: ${userData['batch'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
+            Text('Total Amount: \$${userData['total_amount'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
+            Text('Amount Paid: \$${userData['amount_paid'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
+            Text('Pending Amount: \$${userData['pending_amount'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
           ],
         ),
       ),
