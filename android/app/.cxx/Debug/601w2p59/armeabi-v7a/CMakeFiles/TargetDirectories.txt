@@ -1,0 +1,2 @@
+C:/Users/binesh/OneDrive/Desktop/fitness_app-6/android/app/.cxx/Debug/601w2p59/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/binesh/OneDrive/Desktop/fitness_app-6/android/app/.cxx/Debug/601w2p59/armeabi-v7a/CMakeFiles/rebuild_cache.dir

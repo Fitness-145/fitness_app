@@ -102,8 +102,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   }
 
   void _editPlanDetails(List<dynamic> currentPlan) {
-    TextEditingController planController = TextEditingController();
-    planController.text = currentPlan.join("\n");
+    TextEditingController _planController = TextEditingController();
+    _planController.text = currentPlan.join("\n");
 
     showModalBottomSheet(
       context: context,
@@ -128,7 +128,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: planController,
+                controller: _planController,
                 maxLines: 6,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
@@ -138,7 +138,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
-                  List<String> updatedPlan = planController.text.split("\n");
+                  List<String> updatedPlan = _planController.text.split("\n");
                   FirebaseFirestore.instance.collection('plans').doc(widget.userId).update({
                     'planDetails': updatedPlan,
                   });
@@ -157,6 +157,20 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
         );
       },
     );
+  }
+
+  void _verifyPlan() async {
+    await FirebaseFirestore.instance.collection('plans').doc(widget.userId).update({
+      'verified': true,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Plan verified successfully!')),
+    );
+
+    setState(() {
+      _planFuture = FirebaseFirestore.instance.collection('plans').doc(widget.userId).get();
+    });
   }
 
   @override
@@ -213,6 +227,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
 
                     final planData = snapshot.data!.data();
                     final List<dynamic> planDetails = planData?['planDetails'] ?? [];
+                    final bool isVerified = planData?['verified'] ?? false;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,14 +239,24 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         const SizedBox(height: 10),
                         ListView.builder(
                           shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
+                          physics: NeverScrollableScrollPhysics(),
                           itemCount: planDetails.length,
                           itemBuilder: (context, index) {
                             return ListTile(
-                              leading: const Icon(Icons.fitness_center, color: Colors.blueAccent),
+                              leading: Icon(Icons.fitness_center, color: Colors.blueAccent),
                               title: Text(planDetails[index], style: const TextStyle(fontSize: 16)),
                             );
                           },
+                        ),
+                        const SizedBox(height: 20),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: isVerified ? null : _verifyPlan,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isVerified ? Colors.green : Colors.blueAccent,
+                            ),
+                            child: Text(isVerified ? 'Verified' : 'Verify Plan'),
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Center(
