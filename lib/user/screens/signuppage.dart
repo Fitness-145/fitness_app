@@ -73,8 +73,8 @@ class _SignupScreenState extends State<SignupScreen> {
         'weight': double.parse(_weightController.text.trim()),
         'phone': _phoneController.text.trim(),
         'role': 'user',
-        
         'gender': _selectedGender, // Save selected gender
+        'isSubscribed': false, // Add isSubscribed field and set it to false
         'created_at': Timestamp.now(),
       });
 

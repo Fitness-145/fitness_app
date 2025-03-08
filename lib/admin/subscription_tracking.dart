@@ -93,9 +93,8 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
 
                 if (searchQuery.isNotEmpty) {
                   users = users
-                      .where((user) => user['name']
-                          .toLowerCase()
-                          .contains(searchQuery))
+                      .where((user) =>
+                          user['name'].toLowerCase().contains(searchQuery))
                       .toList();
                 }
 
@@ -150,8 +149,7 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
                         child: ListTile(
                           title: Text(
                             user['name'],
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
                             user['issubscribed'] == true
@@ -200,12 +198,17 @@ class UserDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Subscription: ${userData['issubscribed'] ? "Active" : "Inactive"}', style: const TextStyle(fontSize: 18)),
-            Text('Package: ${userData['package'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
-            Text('Batch: ${userData['batch'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
-            Text('Total Amount: \$${userData['total_amount'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
-            Text('Amount Paid: \$${userData['amount_paid'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
-            Text('Pending Amount: \$${userData['pending_amount'] ?? "N/A"}', style: const TextStyle(fontSize: 18)),
+            //Text('Subscription: ${userData['issubscribed'] ? "Active" : "Inactive"}', style: const TextStyle(fontSize: 18)),
+            Text('Package: ${userData['package'] ?? "N/A"}',
+                style: const TextStyle(fontSize: 18)),
+            Text('Batch: ${userData['batch'] ?? "N/A"}',
+                style: const TextStyle(fontSize: 18)),
+            Text('Total Amount: \$${userData['total_amount'] ?? "N/A"}',
+                style: const TextStyle(fontSize: 18)),
+            Text('Amount Paid: \$${userData['amount_paid'] ?? "N/A"}',
+                style: const TextStyle(fontSize: 18)),
+            Text('Pending Amount: \$${userData['pending_amount'] ?? "N/A"}',
+                style: const TextStyle(fontSize: 18)),
           ],
         ),
       ),
