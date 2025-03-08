@@ -107,7 +107,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const MyPlanScreen()),
+        MaterialPageRoute(builder: (context) =>  CreatePlanScreen()),
       );
 
       print("Data added to Firestore successfully!");
