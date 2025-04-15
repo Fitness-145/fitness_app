@@ -241,3 +241,4 @@ class _TrainerMessageScreenState extends State<TrainerMessageScreen> {
     // You can customize the reply message above.
   }
 }
+ 
