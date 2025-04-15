@@ -102,8 +102,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   }
 
   void _editPlanDetails(List<dynamic> currentPlan) {
-    TextEditingController _planController = TextEditingController();
-    _planController.text = currentPlan.join("\n");
+    TextEditingController planController = TextEditingController();
+    planController.text = currentPlan.join("\n");
 
     showModalBottomSheet(
       context: context,
@@ -128,7 +128,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: _planController,
+                controller: planController,
                 maxLines: 6,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
@@ -138,7 +138,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
-                  List<String> updatedPlan = _planController.text.split("\n");
+                  List<String> updatedPlan = planController.text.split("\n");
                   FirebaseFirestore.instance.collection('plans').doc(widget.userId).update({
                     'planDetails': updatedPlan,
                   });
@@ -239,11 +239,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         const SizedBox(height: 10),
                         ListView.builder(
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: planDetails.length,
                           itemBuilder: (context, index) {
                             return ListTile(
-                              leading: Icon(Icons.fitness_center, color: Colors.blueAccent),
+                              leading: const Icon(Icons.fitness_center, color: Colors.blueAccent),
                               title: Text(planDetails[index], style: const TextStyle(fontSize: 16)),
                             );
                           },

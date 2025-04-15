@@ -582,7 +582,7 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) =>  ChatbotScreen()),
+        MaterialPageRoute(builder: (context) =>  const ChatbotScreen()),
       );
     }
   }

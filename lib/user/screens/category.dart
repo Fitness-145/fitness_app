@@ -45,7 +45,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>  MyPlanScreen()),
+          MaterialPageRoute(builder: (context) =>  const MyPlanScreen()),
         );
       });
     } else {
@@ -63,7 +63,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>  MyPlanScreen(),
+          builder: (context) =>  const MyPlanScreen(),
         ),
       );
     } else if (index == 2) {
@@ -93,7 +93,7 @@ class _CustomizeInterestsScreenState extends State<CustomizeInterestsScreen> {
         ),
       ),
       body: isPaymentSuccessful
-          ?  MyPlanScreen() // Show MyPlanScreen if payment is successful
+          ?  const MyPlanScreen() // Show MyPlanScreen if payment is successful
           : SizedBox(
               height: MediaQuery.of(context).size.height,
               child: Container(
