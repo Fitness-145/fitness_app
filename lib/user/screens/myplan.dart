@@ -6,6 +6,7 @@ import 'package:fitness_app/user/screens/chatbot.dart';
 import 'package:fitness_app/user/screens/gymactivity_screen.dart';
 import 'package:fitness_app/user/screens/profilescreen.dart';
 import 'package:fitness_app/user/user_message_screen.dart';
+ 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -97,7 +98,6 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
           if (mounted) {
             setState(() {
               planDetails = ["No plan found. Please create a new plan."];
-              isPlanVerified = false;
               isLoading = false;
             });
           }
@@ -577,12 +577,16 @@ class _MyPlanScreenState extends State<MyPlanScreen> {
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const MyActivitiesPage()),
+        MaterialPageRoute(
+          builder: (context) => ActivitiesTrackScreen(
+            userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+          ),
+        ),
       );
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) =>  const ChatbotScreen()),
+        MaterialPageRoute(builder: (context) => const ChatbotScreen()),
       );
     }
   }

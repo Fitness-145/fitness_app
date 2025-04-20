@@ -12,8 +12,28 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
   String searchQuery = ""; // Search query for users
   Set<String> selectedUsers = {}; // Set to track selected users
   String sortBy = 'name'; // Default sorting by name
+  int currentPage = 1;
+  final int itemsPerPage = 5; // Same as AttendancePage
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  List<QueryDocumentSnapshot> getPaginatedUsers(List<QueryDocumentSnapshot> users) {
+    final startIndex = (currentPage - 1) * itemsPerPage;
+    final endIndex = (startIndex + itemsPerPage).clamp(0, users.length);
+    return users.sublist(startIndex, endIndex);
+  }
+
+  void _nextPage(int totalUsers) {
+    if (currentPage * itemsPerPage < totalUsers) {
+      setState(() => currentPage++);
+    }
+  }
+
+  void _previousPage() {
+    if (currentPage > 1) {
+      setState(() => currentPage--);
+    }
+  }
 
   void _openUserDetails(BuildContext context, Map<String, dynamic>? userData) {
     if (userData == null) return;
@@ -27,6 +47,9 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -36,47 +59,55 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: selectedUsers.isNotEmpty
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.white),
-                  onPressed: () => _deleteSelectedUsers(),
+        actions: [
+          if (selectedUsers.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.white),
+              onPressed: () => _deleteSelectedUsers(),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: DropdownButton<String>(
+                value: sortBy,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    sortBy = newValue!;
+                    currentPage = 1; // Reset to first page on sort change
+                  });
+                },
+                items: <String>['name', 'subscription']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value.toUpperCase()),
+                  );
+                }).toList(),
+                borderRadius: BorderRadius.circular(8),
+                underline: Container(
+                  height: 1,
+                  color: Colors.white,
                 ),
-              ]
-            : [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: DropdownButton<String>(
-                    value: sortBy,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        sortBy = newValue!;
-                      });
-                    },
-                    items: <String>['name', 'subscription']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value.toUpperCase()),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
+              ),
+            ),
+        ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Search User",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onChanged: (value) {
                 setState(() {
                   searchQuery = value.toLowerCase();
+                  currentPage = 1; // Reset to first page on search
                 });
               },
             ),
@@ -111,61 +142,132 @@ class _SubscriptionTrackingState extends State<SubscriptionTracking> {
                   });
                 }
 
-                return ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    var user = users[index];
-                    bool isSelected = selectedUsers.contains(user.id);
-                    final userData = user.data() as Map<String, dynamic>?;
+                final paginatedUsers = getPaginatedUsers(users);
 
-                    return GestureDetector(
-                      onTap: () => _openUserDetails(context, userData),
-                      onLongPress: () {
-                        setState(() {
-                          if (isSelected) {
-                            selectedUsers.remove(user.id);
-                          } else {
-                            selectedUsers.add(user.id);
-                          }
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.grey[300] : Colors.white,
-                          border:
-                              Border.all(color: Colors.deepPurple, width: 1.5),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+                return Column(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: ListTile(
-                          title: Text(
-                            user['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            user['issubscribed'] == true
-                                ? "Subscribed"
-                                : "Not Subscribed",
-                            style: TextStyle(
-                              color: user['issubscribed'] == true
-                                  ? Colors.green
-                                  : Colors.red,
-                              fontWeight: FontWeight.bold,
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: screenWidth - 8, // Match screen width minus margins
+                              ),
+                              child: DataTable(
+                                columnSpacing: 16,
+                                headingRowColor: MaterialStateColor.resolveWith(
+                                    (states) => Colors.deepPurple.shade100),
+                                columns: const [
+                                  DataColumn(
+                                    label: Expanded(
+                                      child: Text(
+                                        'Name',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Expanded(
+                                      child: Text(
+                                        'Subscription',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                rows: paginatedUsers.asMap().entries.map((entry) {
+                                  final index = entry.key;
+                                  final user = entry.value;
+                                  final isSelected =
+                                      selectedUsers.contains(user.id);
+                                  final userData = user.data() as Map<String, dynamic>?;
+
+                                  return DataRow(
+                                    color: MaterialStateColor.resolveWith((states) =>
+                                        index % 2 == 0
+                                            ? Colors.grey.shade100
+                                            : Colors.white),
+                                    selected: isSelected,
+                                    onSelectChanged: (selected) {
+                                      setState(() {
+                                        if (selected!) {
+                                          selectedUsers.add(user.id);
+                                        } else {
+                                          selectedUsers.remove(user.id);
+                                        }
+                                      });
+                                    },
+                                    cells: [
+                                      DataCell(
+                                        Container(
+                                          constraints: BoxConstraints(
+                                            maxWidth: (screenWidth - 8) / 2 - 16, // Half width minus spacing
+                                          ),
+                                          child: Text(
+                                            user['name'],
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        onTap: () => _openUserDetails(context, userData),
+                                      ),
+                                      DataCell(
+                                        Container(
+                                          constraints: BoxConstraints(
+                                            maxWidth: (screenWidth - 8) / 2 - 16, // Half width minus spacing
+                                          ),
+                                          child: Text(
+                                            user['issubscribed'] == true
+                                                ? "Subscribed"
+                                                : "Not Subscribed",
+                                            style: TextStyle(
+                                              color: user['issubscribed'] == true
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: _previousPage,
+                            icon: const Icon(Icons.arrow_left),
+                          ),
+                          Text('$currentPage',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                          IconButton(
+                            onPressed: () => _nextPage(users.length),
+                            icon: const Icon(Icons.arrow_right),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -192,13 +294,16 @@ class UserDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${userData['name']} - Subscription Details')),
+      appBar: AppBar(
+        title: Text('${userData['name']} - Subscription Details'),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //Text('Subscription: ${userData['issubscribed'] ? "Active" : "Inactive"}', style: const TextStyle(fontSize: 18)),
             Text('Package: ${userData['package'] ?? "N/A"}',
                 style: const TextStyle(fontSize: 18)),
             Text('Batch: ${userData['batch'] ?? "N/A"}',
